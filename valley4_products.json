@@ -1,0 +1,148 @@
+{
+  "region": {
+    "id": "valley_iv",
+    "name_ja": "四号谷地",
+    "name_en": "Valley IV",
+    "name_zh": "四号谷地",
+    "currency": {
+      "id": "valley_stock_bill",
+      "name_ja": "谷地取引券",
+      "name_en": "Valley Stock Bill",
+      "name_zh": "谷地调度券"
+    }
+  },
+  "outposts": [
+    {
+      "id": "central_hub",
+      "name_ja": "中枢エリア",
+      "name_en": "Central Hub",
+      "name_zh": "枢纽区"
+    },
+    {
+      "id": "originium_research_park",
+      "name_ja": "源石研究パーク",
+      "name_en": "Originium Research Park",
+      "name_zh": "源石研究园"
+    },
+    {
+      "id": "power_plateau",
+      "name_ja": "エネルギー高地",
+      "name_en": "Power Plateau",
+      "name_zh": "供能高地"
+    }
+  ],
+  "products": [
+    {
+      "id": "origocrust",
+      "name_ja": "結晶外殻",
+      "name_en": "Origocrust",
+      "name_zh": "结晶外壳",
+      "category": "basic_material",
+      "trade_value": 1
+    },
+    {
+      "id": "amethyst_bottle",
+      "name_ja": "紫晶製ボトル",
+      "name_en": "Amethyst Bottle",
+      "name_zh": "紫晶瓶",
+      "category": "basic_material",
+      "trade_value": 2
+    },
+    {
+      "id": "amethyst_part",
+      "name_ja": "紫晶部品",
+      "name_en": "Amethyst Part",
+      "name_zh": "紫晶零件",
+      "category": "part",
+      "trade_value": 1
+    },
+    {
+      "id": "ferrium_part",
+      "name_ja": "鉄製部品",
+      "name_en": "Ferrium Part",
+      "name_zh": "铁青零件",
+      "category": "part",
+      "trade_value": 1
+    },
+    {
+      "id": "steel_part",
+      "name_ja": "鋼製部品",
+      "name_en": "Steel Part",
+      "name_zh": "钢制零件",
+      "category": "part",
+      "trade_value": 3
+    },
+    {
+      "id": "buck_capsule_c",
+      "name_ja": "蕎花カプセルⅠ",
+      "name_en": "Buck Capsule C",
+      "name_zh": "荞愈胶囊",
+      "category": "capsule",
+      "trade_value": 10
+    },
+    {
+      "id": "canned_citrome_c",
+      "name_ja": "シトロームの缶詰Ⅰ",
+      "name_en": "Canned Citrome C",
+      "name_zh": "柑实罐头",
+      "category": "canned_food",
+      "trade_value": 10
+    },
+    {
+      "id": "lc_valley_battery",
+      "name_ja": "小容量谷地バッテリー",
+      "name_en": "LC Valley Battery",
+      "name_zh": "低容谷地电池",
+      "category": "battery",
+      "trade_value": 16
+    },
+    {
+      "id": "buck_capsule_b",
+      "name_ja": "蕎花カプセルⅡ",
+      "name_en": "Buck Capsule B",
+      "name_zh": "优质荞愈胶囊",
+      "category": "capsule",
+      "trade_value": 27
+    },
+    {
+      "id": "canned_citrome_b",
+      "name_ja": "シトロームの缶詰Ⅱ",
+      "name_en": "Canned Citrome B",
+      "name_zh": "优质柑实罐头",
+      "category": "canned_food",
+      "trade_value": 27
+    },
+    {
+      "id": "sc_valley_battery",
+      "name_ja": "中容量谷地バッテリー",
+      "name_en": "SC Valley Battery",
+      "name_zh": "中容谷地电池",
+      "category": "battery",
+      "trade_value": 30
+    },
+    {
+      "id": "buck_capsule_a",
+      "name_ja": "蕎花カプセルⅢ",
+      "name_en": "Buck Capsule A",
+      "name_zh": "精选荞愈胶囊",
+      "category": "capsule",
+      "trade_value": 70
+    },
+    {
+      "id": "canned_citrome_a",
+      "name_ja": "シトロームの缶詰Ⅲ",
+      "name_en": "Canned Citrome A",
+      "name_zh": "精选柑实罐头",
+      "category": "canned_food",
+      "trade_value": 70
+    },
+    {
+      "id": "hc_valley_battery",
+      "name_ja": "大容量谷地バッテリー",
+      "name_en": "HC Valley Battery",
+      "name_zh": "高容谷地电池",
+      "category": "battery",
+      "trade_value": 70
+    }
+  ]
+}

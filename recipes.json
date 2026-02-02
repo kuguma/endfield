@@ -1,0 +1,217 @@
+{
+  "machines": {
+    "shredding_unit": { "name_en": "Shredding Unit", "name_ja": "粉砕ユニット" },
+    "refining_unit": { "name_en": "Refining Unit", "name_ja": "精錬ユニット" },
+    "moulding_unit": { "name_en": "Moulding Unit", "name_ja": "成型ユニット" },
+    "fitting_unit": { "name_en": "Fitting Unit", "name_ja": "組立ユニット" },
+    "grinding_unit": { "name_en": "Grinding Unit", "name_ja": "研磨ユニット" },
+    "filling_unit": { "name_en": "Filling Unit", "name_ja": "充填ユニット" },
+    "packaging_unit": { "name_en": "Packaging Unit", "name_ja": "梱包ユニット" }
+  },
+  "items": {
+    "originium_ore":          { "name_en": "Originium Ore",          "name_ja": "源石鉱",                "type": "raw_ore" },
+    "amethyst_ore":           { "name_en": "Amethyst Ore",           "name_ja": "紫晶鉱",                "type": "raw_ore" },
+    "ferrium_ore":            { "name_en": "Ferrium Ore",            "name_ja": "青鉄鉱",                "type": "raw_ore" },
+    "buckflower":             { "name_en": "Buckflower",             "name_ja": "蕎花",                  "type": "raw_plant" },
+    "citrome":                { "name_en": "Citrome",                "name_ja": "シトローム",             "type": "raw_plant" },
+    "sandleaf":               { "name_en": "Sandleaf",               "name_ja": "サンドリーフ",           "type": "raw_plant" },
+    "originium_powder":       { "name_en": "Originium Powder",       "name_ja": "源石パウダー",           "type": "intermediate" },
+    "dense_originium_powder": { "name_en": "Dense Originium Powder", "name_ja": "高純度源石パウダー",     "type": "intermediate" },
+    "origocrust":             { "name_en": "Origocrust",             "name_ja": "結晶外殻",               "type": "intermediate" },
+    "amethyst_fiber":         { "name_en": "Amethyst Fiber",         "name_ja": "紫晶繊維",               "type": "intermediate" },
+    "amethyst_bottle":        { "name_en": "Amethyst Bottle",        "name_ja": "紫晶製ボトル",           "type": "intermediate" },
+    "amethyst_part":          { "name_en": "Amethyst Part",          "name_ja": "紫晶部品",               "type": "product" },
+    "ferrium":                { "name_en": "Ferrium",                "name_ja": "鉄青",                   "type": "intermediate" },
+    "ferrium_powder":         { "name_en": "Ferrium Powder",         "name_ja": "鉄青パウダー",           "type": "intermediate" },
+    "dense_ferrium_powder":   { "name_en": "Dense Ferrium Powder",   "name_ja": "高純度鉄青パウダー",     "type": "intermediate" },
+    "ferrium_bottle":         { "name_en": "Ferrium Bottle",         "name_ja": "鉄青製ボトル",           "type": "intermediate" },
+    "ferrium_part":           { "name_en": "Ferrium Part",           "name_ja": "鉄製部品",               "type": "product" },
+    "steel":                  { "name_en": "Steel",                  "name_ja": "鋼",                     "type": "intermediate" },
+    "steel_bottle":           { "name_en": "Steel Bottle",           "name_ja": "鋼製ボトル",             "type": "intermediate" },
+    "steel_part":             { "name_en": "Steel Part",             "name_ja": "鋼製部品",               "type": "product" },
+    "buckflower_powder":      { "name_en": "Buckflower Powder",      "name_ja": "蕎花パウダー",           "type": "intermediate" },
+    "ground_buckflower_powder": { "name_en": "Ground Buckflower Powder", "name_ja": "高純度蕎花パウダー", "type": "intermediate" },
+    "citrome_powder":         { "name_en": "Citrome Powder",         "name_ja": "シトロームパウダー",     "type": "intermediate" },
+    "ground_citrome_powder":  { "name_en": "Ground Citrome Powder",  "name_ja": "高純度シトロームパウダー", "type": "intermediate" },
+    "sandleaf_powder":        { "name_en": "Sandleaf Powder",        "name_ja": "サンドリーフパウダー",   "type": "intermediate" },
+    "buck_capsule_c":         { "name_en": "Buck Capsule C",         "name_ja": "蕎花カプセルⅠ",         "type": "product" },
+    "buck_capsule_b":         { "name_en": "Buck Capsule B",         "name_ja": "蕎花カプセルⅡ",         "type": "product" },
+    "buck_capsule_a":         { "name_en": "Buck Capsule A",         "name_ja": "蕎花カプセルⅢ",         "type": "product" },
+    "canned_citrome_c":       { "name_en": "Canned Citrome C",       "name_ja": "シトロームの缶詰Ⅰ",     "type": "product" },
+    "canned_citrome_b":       { "name_en": "Canned Citrome B",       "name_ja": "シトロームの缶詰Ⅱ",     "type": "product" },
+    "canned_citrome_a":       { "name_en": "Canned Citrome A",       "name_ja": "シトロームの缶詰Ⅲ",     "type": "product" },
+    "lc_valley_battery":      { "name_en": "LC Valley Battery",      "name_ja": "小容量谷地バッテリー",   "type": "product" },
+    "sc_valley_battery":      { "name_en": "SC Valley Battery",      "name_ja": "中容量谷地バッテリー",   "type": "product" },
+    "hc_valley_battery":      { "name_en": "HC Valley Battery",      "name_ja": "大容量谷地バッテリー",   "type": "product" }
+  },
+  "recipes": {
+    "originium_powder": {
+      "machine": "shredding_unit",
+      "time_sec": 2,
+      "inputs": { "originium_ore": 1 },
+      "outputs": { "originium_powder": 1 }
+    },
+    "origocrust": {
+      "machine": "refining_unit",
+      "time_sec": 2,
+      "inputs": { "originium_ore": 1 },
+      "outputs": { "origocrust": 1 }
+    },
+    "amethyst_fiber": {
+      "machine": "refining_unit",
+      "time_sec": 2,
+      "inputs": { "amethyst_ore": 1 },
+      "outputs": { "amethyst_fiber": 1 }
+    },
+    "amethyst_bottle": {
+      "machine": "moulding_unit",
+      "time_sec": 2,
+      "inputs": { "amethyst_fiber": 2 },
+      "outputs": { "amethyst_bottle": 1 }
+    },
+    "amethyst_part": {
+      "machine": "fitting_unit",
+      "time_sec": 2,
+      "inputs": { "amethyst_fiber": 1 },
+      "outputs": { "amethyst_part": 1 }
+    },
+    "ferrium": {
+      "machine": "refining_unit",
+      "time_sec": 2,
+      "inputs": { "ferrium_ore": 1 },
+      "outputs": { "ferrium": 1 }
+    },
+    "ferrium_powder": {
+      "machine": "shredding_unit",
+      "time_sec": 2,
+      "inputs": { "ferrium": 1 },
+      "outputs": { "ferrium_powder": 1 }
+    },
+    "ferrium_bottle": {
+      "machine": "moulding_unit",
+      "time_sec": 2,
+      "inputs": { "ferrium": 2 },
+      "outputs": { "ferrium_bottle": 1 }
+    },
+    "ferrium_part": {
+      "machine": "fitting_unit",
+      "time_sec": 2,
+      "inputs": { "ferrium": 1 },
+      "outputs": { "ferrium_part": 1 }
+    },
+    "buckflower_powder": {
+      "machine": "shredding_unit",
+      "time_sec": 2,
+      "inputs": { "buckflower": 1 },
+      "outputs": { "buckflower_powder": 2 }
+    },
+    "citrome_powder": {
+      "machine": "shredding_unit",
+      "time_sec": 2,
+      "inputs": { "citrome": 1 },
+      "outputs": { "citrome_powder": 2 }
+    },
+    "sandleaf_powder": {
+      "machine": "shredding_unit",
+      "time_sec": 2,
+      "inputs": { "sandleaf": 1 },
+      "outputs": { "sandleaf_powder": 3 }
+    },
+    "dense_ferrium_powder": {
+      "machine": "grinding_unit",
+      "time_sec": 2,
+      "inputs": { "ferrium_powder": 2, "sandleaf_powder": 1 },
+      "outputs": { "dense_ferrium_powder": 1 }
+    },
+    "dense_originium_powder": {
+      "machine": "grinding_unit",
+      "time_sec": 2,
+      "inputs": { "originium_powder": 2, "sandleaf_powder": 1 },
+      "outputs": { "dense_originium_powder": 1 }
+    },
+    "ground_buckflower_powder": {
+      "machine": "grinding_unit",
+      "time_sec": 2,
+      "inputs": { "buckflower_powder": 2, "sandleaf_powder": 1 },
+      "outputs": { "ground_buckflower_powder": 1 }
+    },
+    "ground_citrome_powder": {
+      "machine": "grinding_unit",
+      "time_sec": 2,
+      "inputs": { "citrome_powder": 2, "sandleaf_powder": 1 },
+      "outputs": { "ground_citrome_powder": 1 }
+    },
+    "steel": {
+      "machine": "refining_unit",
+      "time_sec": 2,
+      "inputs": { "dense_ferrium_powder": 1 },
+      "outputs": { "steel": 1 }
+    },
+    "steel_bottle": {
+      "machine": "moulding_unit",
+      "time_sec": 2,
+      "inputs": { "steel": 2 },
+      "outputs": { "steel_bottle": 1 }
+    },
+    "steel_part": {
+      "machine": "fitting_unit",
+      "time_sec": 2,
+      "inputs": { "steel": 1 },
+      "outputs": { "steel_part": 1 }
+    },
+    "buck_capsule_c": {
+      "machine": "filling_unit",
+      "time_sec": 10,
+      "inputs": { "buckflower_powder": 5, "amethyst_bottle": 5 },
+      "outputs": { "buck_capsule_c": 1 }
+    },
+    "buck_capsule_b": {
+      "machine": "filling_unit",
+      "time_sec": 10,
+      "inputs": { "buckflower_powder": 10, "ferrium_bottle": 10 },
+      "outputs": { "buck_capsule_b": 1 }
+    },
+    "buck_capsule_a": {
+      "machine": "filling_unit",
+      "time_sec": 10,
+      "inputs": { "ground_buckflower_powder": 10, "steel_bottle": 10 },
+      "outputs": { "buck_capsule_a": 1 }
+    },
+    "canned_citrome_c": {
+      "machine": "filling_unit",
+      "time_sec": 10,
+      "inputs": { "citrome_powder": 5, "amethyst_bottle": 5 },
+      "outputs": { "canned_citrome_c": 1 }
+    },
+    "canned_citrome_b": {
+      "machine": "filling_unit",
+      "time_sec": 10,
+      "inputs": { "citrome_powder": 10, "ferrium_bottle": 10 },
+      "outputs": { "canned_citrome_b": 1 }
+    },
+    "canned_citrome_a": {
+      "machine": "filling_unit",
+      "time_sec": 10,
+      "inputs": { "ground_citrome_powder": 10, "steel_bottle": 10 },
+      "outputs": { "canned_citrome_a": 1 }
+    },
+    "lc_valley_battery": {
+      "machine": "packaging_unit",
+      "time_sec": 10,
+      "inputs": { "amethyst_part": 5, "originium_powder": 10 },
+      "outputs": { "lc_valley_battery": 1 }
+    },
+    "sc_valley_battery": {
+      "machine": "packaging_unit",
+      "time_sec": 10,
+      "inputs": { "ferrium_part": 10, "originium_powder": 15 },
+      "outputs": { "sc_valley_battery": 1 }
+    },
+    "hc_valley_battery": {
+      "machine": "packaging_unit",
+      "time_sec": 10,
+      "inputs": { "steel_part": 10, "dense_originium_powder": 15 },
+      "outputs": { "hc_valley_battery": 1 }
+    }
+  }
+}

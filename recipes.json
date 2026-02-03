@@ -1,12 +1,13 @@
 {
   "machines": {
-    "shredding_unit": { "name_en": "Shredding Unit", "name_ja": "粉砕ユニット" },
-    "refining_unit": { "name_en": "Refining Unit", "name_ja": "精錬ユニット" },
-    "moulding_unit": { "name_en": "Moulding Unit", "name_ja": "成型ユニット" },
-    "fitting_unit": { "name_en": "Fitting Unit", "name_ja": "組立ユニット" },
-    "grinding_unit": { "name_en": "Grinding Unit", "name_ja": "研磨ユニット" },
-    "filling_unit": { "name_en": "Filling Unit", "name_ja": "充填ユニット" },
-    "packaging_unit": { "name_en": "Packaging Unit", "name_ja": "梱包ユニット" }
+    "shredding_unit": { "name_en": "Shredding Unit", "name_ja": "粉砕ユニット", "power": 5 },
+    "refining_unit": { "name_en": "Refining Unit", "name_ja": "精錬ユニット", "power": 5 },
+    "moulding_unit": { "name_en": "Moulding Unit", "name_ja": "成型ユニット", "power": 10 },
+    "fitting_unit": { "name_en": "Fitting Unit", "name_ja": "組立ユニット", "power": 20 },
+    "grinding_unit": { "name_en": "Grinding Unit", "name_ja": "研磨ユニット", "power": 50 },
+    "filling_unit": { "name_en": "Filling Unit", "name_ja": "充填ユニット", "power": 20 },
+    "packaging_unit": { "name_en": "Packaging Unit", "name_ja": "梱包ユニット", "power": 20 },
+    "thermal_bank": { "name_en": "Thermal Bank", "name_ja": "サーマルバンク", "power": 0, "note": "power generator" }
   },
   "items": {
     "originium_ore":          { "name_en": "Originium Ore",          "name_ja": "源石鉱",                "type": "raw_ore" },

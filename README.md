@@ -16,9 +16,11 @@
 endfield_db/
 ├── README.md                    # このファイル
 ├── valley4_products.json        # 四号谷地の出荷製品データベース
+├── wuling_products.json         # 武陵の出荷製品データベース
 ├── recipes.json                 # 生産レシピ・マシン電力データベース
 └── docs/
-    └── valley4_analysis.md      # 四号谷地 出荷製品の効率分析
+    ├── valley4_analysis.md      # 四号谷地 出荷製品の効率分析
+    └── wuling_analysis.md       # 武陵 出荷製品の効率分析
 ```
 
 ## データベース
@@ -36,21 +38,36 @@ endfield_db/
 }
 ```
 
+### wuling_products.json
+
+武陵（Wuling）で拠点取引可能な全3製品。
+
+```json
+{
+  "id": "lc_wuling_battery",
+  "name_ja": "小容量武陵バッテリー",
+  "name_en": "LC Wuling Battery",
+  "trade_value": 25
+}
+```
+
 ### recipes.json
 
-全28レシピと7種のマシン電力データ。
+全39レシピと10種のマシン電力データ（四号谷地・武陵共通）。
 
 ```json
 {
   "machines": {
-    "grinding_unit": { "name_en": "Grinding Unit", "power": 50 }
+    "grinding_unit": { "name_en": "Grinding Unit", "power": 50 },
+    "forge_of_the_sky": { "name_en": "Forge of the Sky", "power": 50, "region": "wuling" }
   },
   "recipes": {
-    "sc_valley_battery": {
-      "machine": "packaging_unit",
-      "time_sec": 10,
-      "inputs": { "ferrium_part": 10, "originium_powder": 15 },
-      "outputs": { "sc_valley_battery": 1 }
+    "xiranite": {
+      "machine": "forge_of_the_sky",
+      "time_sec": 2,
+      "inputs": { "stabilized_carbon": 2, "clean_water": 1 },
+      "outputs": { "xiranite": 1 },
+      "region": "wuling"
     }
   }
 }
@@ -58,15 +75,9 @@ endfield_db/
 
 ## 効率分析
 
-[四号谷地 出荷製品の効率分析](docs/valley4_analysis.md) では、各製品について：
+### 四号谷地
 
-- 原材料消費レート（フルレート生産時）
-- 電力コストを含めた総コスト
-- 実効利益率の比較
-
-を算出しています。
-
-### 主な発見
+[四号谷地 出荷製品の効率分析](docs/valley4_analysis.md) では、全14製品について原材料消費レート、電力コスト、実効利益率を算出しています。
 
 | 指標 | 最良の選択肢 |
 |---|---|
@@ -74,8 +85,23 @@ endfield_db/
 | 実効利益/min | 大容量バッテリー (+32.0/min) |
 | 避けるべき製品 | カプセルⅠ / 缶詰Ⅰ (−24.1%) |
 
-- Tier III 製品（カプセルⅢ/缶詰Ⅲ/大容量バッテリー）は Grinding Unit の電力コストが重く、見かけの利益率 (17-20%) から実効 4-8% まで低下
-- 基礎素材（結晶外殻/紫晶ボトル/部品）は電力分だけ赤字になるため、そのまま出荷するより加工した方が良い場合もある
+**主な発見:**
+- Tier III 製品は Grinding Unit の電力コストが重く、見かけの利益率 (17-20%) から実効 4-8% まで低下
+- 基礎素材（結晶外殻/紫晶ボトル/部品）は電力分だけ赤字
+
+### 武陵
+
+[武陵 出荷製品の効率分析](docs/wuling_analysis.md) では、全3製品について同様の分析を行っています。
+
+| 指標 | 最良の選択肢 |
+|---|---|
+| 実効利益率 | 小容量武陵バッテリー (+11.7%) |
+| 実効利益/min | 小容量武陵バッテリー (+15.7/min) |
+| 避けるべき製品 | 息壌（単体出荷）(−35.9%) |
+
+**主な発見:**
+- 息壌は単体で出荷せず、必ず小容量武陵バッテリーに加工してから出荷すべき
+- 芽針注射剤Ⅰは取引より戦闘消耗品として使用した方が効率的
 
 ## データソース
 

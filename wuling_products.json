@@ -1,0 +1,54 @@
+{
+  "region": {
+    "id": "wuling",
+    "name_ja": "武陵",
+    "name_en": "Wuling",
+    "name_zh": "武陵",
+    "currency": {
+      "id": "wuling_stock_bill",
+      "name_ja": "武陵取引券",
+      "name_en": "Wuling Stock Bill",
+      "name_zh": "武陵调度券"
+    }
+  },
+  "outposts": [
+    {
+      "id": "jingyu_valley",
+      "name_ja": "景玉谷",
+      "name_en": "Jingyu Valley",
+      "name_zh": "景玉谷"
+    },
+    {
+      "id": "wuling_city",
+      "name_ja": "武陵城",
+      "name_en": "Wuling City",
+      "name_zh": "武陵城"
+    }
+  ],
+  "products": [
+    {
+      "id": "xiranite",
+      "name_ja": "息壌",
+      "name_en": "Xiranite",
+      "name_zh": "息壤",
+      "category": "basic_material",
+      "trade_value": 1
+    },
+    {
+      "id": "yazhen_syringe_c",
+      "name_ja": "芽針注射剤Ⅰ",
+      "name_en": "Yazhen Syringe (C)",
+      "name_zh": "芽针针剂",
+      "category": "syringe",
+      "trade_value": 16
+    },
+    {
+      "id": "lc_wuling_battery",
+      "name_ja": "小容量武陵バッテリー",
+      "name_en": "LC Wuling Battery",
+      "name_zh": "低容武陵电池",
+      "category": "battery",
+      "trade_value": 25
+    }
+  ]
+}

@@ -7,7 +7,9 @@
     "grinding_unit": { "name_en": "Grinding Unit", "name_ja": "研磨ユニット", "power": 50 },
     "filling_unit": { "name_en": "Filling Unit", "name_ja": "充填ユニット", "power": 20 },
     "packaging_unit": { "name_en": "Packaging Unit", "name_ja": "梱包ユニット", "power": 20 },
-    "thermal_bank": { "name_en": "Thermal Bank", "name_ja": "サーマルバンク", "power": 0, "note": "power generator" }
+    "thermal_bank": { "name_en": "Thermal Bank", "name_ja": "サーマルバンク", "power": 0, "note": "power generator" },
+    "forge_of_the_sky": { "name_en": "Forge of the Sky", "name_ja": "天穹の炉", "power": 50, "region": "wuling" },
+    "reactor_crucible": { "name_en": "Reactor Crucible", "name_ja": "化学反応炉", "power": 50, "region": "wuling" }
   },
   "items": {
     "originium_ore":          { "name_en": "Originium Ore",          "name_ja": "源石鉱",                "type": "raw_ore" },
@@ -16,6 +18,9 @@
     "buckflower":             { "name_en": "Buckflower",             "name_ja": "蕎花",                  "type": "raw_plant" },
     "citrome":                { "name_en": "Citrome",                "name_ja": "シトローム",             "type": "raw_plant" },
     "sandleaf":               { "name_en": "Sandleaf",               "name_ja": "サンドリーフ",           "type": "raw_plant" },
+    "jincao":                 { "name_en": "Jincao",                 "name_ja": "錦草",                  "type": "raw_plant", "region": "wuling" },
+    "yazhen":                 { "name_en": "Yazhen",                 "name_ja": "芽針",                  "type": "raw_plant", "region": "wuling" },
+    "clean_water":            { "name_en": "Clean Water",            "name_ja": "清水",                  "type": "raw_fluid", "region": "wuling" },
     "originium_powder":       { "name_en": "Originium Powder",       "name_ja": "源石パウダー",           "type": "intermediate" },
     "dense_originium_powder": { "name_en": "Dense Originium Powder", "name_ja": "高純度源石パウダー",     "type": "intermediate" },
     "origocrust":             { "name_en": "Origocrust",             "name_ja": "結晶外殻",               "type": "intermediate" },
@@ -35,6 +40,16 @@
     "citrome_powder":         { "name_en": "Citrome Powder",         "name_ja": "シトロームパウダー",     "type": "intermediate" },
     "ground_citrome_powder":  { "name_en": "Ground Citrome Powder",  "name_ja": "高純度シトロームパウダー", "type": "intermediate" },
     "sandleaf_powder":        { "name_en": "Sandleaf Powder",        "name_ja": "サンドリーフパウダー",   "type": "intermediate" },
+    "carbon":                 { "name_en": "Carbon",                 "name_ja": "炭素",                   "type": "intermediate", "region": "wuling" },
+    "carbon_powder":          { "name_en": "Carbon Powder",          "name_ja": "炭素パウダー",           "type": "intermediate", "region": "wuling" },
+    "dense_carbon_powder":    { "name_en": "Dense Carbon Powder",    "name_ja": "高純度炭素パウダー",     "type": "intermediate", "region": "wuling" },
+    "stabilized_carbon":      { "name_en": "Stabilized Carbon",      "name_ja": "安定化炭素",             "type": "intermediate", "region": "wuling" },
+    "xiranite":               { "name_en": "Xiranite",               "name_ja": "息壌",                   "type": "product", "region": "wuling" },
+    "yazhen_powder":          { "name_en": "Yazhen Powder",          "name_ja": "芽針パウダー",           "type": "intermediate", "region": "wuling" },
+    "yazhen_solution":        { "name_en": "Yazhen Solution",        "name_ja": "芽針溶液",               "type": "intermediate", "region": "wuling" },
+    "ferrium_bottle_yazhen_solution": { "name_en": "Ferrium Bottle (Yazhen Solution)", "name_ja": "鉄青製ボトル（芽針溶液）", "type": "intermediate", "region": "wuling" },
+    "yazhen_syringe_c":       { "name_en": "Yazhen Syringe (C)",     "name_ja": "芽針注射剤Ⅰ",           "type": "product", "region": "wuling" },
+    "lc_wuling_battery":      { "name_en": "LC Wuling Battery",      "name_ja": "小容量武陵バッテリー",   "type": "product", "region": "wuling" },
     "buck_capsule_c":         { "name_en": "Buck Capsule C",         "name_ja": "蕎花カプセルⅠ",         "type": "product" },
     "buck_capsule_b":         { "name_en": "Buck Capsule B",         "name_ja": "蕎花カプセルⅡ",         "type": "product" },
     "buck_capsule_a":         { "name_en": "Buck Capsule A",         "name_ja": "蕎花カプセルⅢ",         "type": "product" },
@@ -213,6 +228,83 @@
       "time_sec": 10,
       "inputs": { "steel_part": 10, "dense_originium_powder": 15 },
       "outputs": { "hc_valley_battery": 1 }
+    },
+    "carbon_from_jincao": {
+      "machine": "refining_unit",
+      "time_sec": 2,
+      "inputs": { "jincao": 1 },
+      "outputs": { "carbon": 2 },
+      "region": "wuling"
+    },
+    "carbon_from_yazhen": {
+      "machine": "refining_unit",
+      "time_sec": 2,
+      "inputs": { "yazhen": 1 },
+      "outputs": { "carbon": 2 },
+      "region": "wuling"
+    },
+    "carbon_powder": {
+      "machine": "shredding_unit",
+      "time_sec": 2,
+      "inputs": { "carbon": 1 },
+      "outputs": { "carbon_powder": 2 },
+      "region": "wuling"
+    },
+    "dense_carbon_powder": {
+      "machine": "refining_unit",
+      "time_sec": 2,
+      "inputs": { "carbon_powder": 1 },
+      "outputs": { "dense_carbon_powder": 1 },
+      "region": "wuling"
+    },
+    "stabilized_carbon": {
+      "machine": "refining_unit",
+      "time_sec": 2,
+      "inputs": { "dense_carbon_powder": 1 },
+      "outputs": { "stabilized_carbon": 1 },
+      "region": "wuling"
+    },
+    "xiranite": {
+      "machine": "forge_of_the_sky",
+      "time_sec": 2,
+      "inputs": { "stabilized_carbon": 2, "clean_water": 1 },
+      "outputs": { "xiranite": 1 },
+      "region": "wuling"
+    },
+    "yazhen_powder": {
+      "machine": "shredding_unit",
+      "time_sec": 2,
+      "inputs": { "yazhen": 1 },
+      "outputs": { "yazhen_powder": 2 },
+      "region": "wuling"
+    },
+    "yazhen_solution": {
+      "machine": "reactor_crucible",
+      "time_sec": 2,
+      "inputs": { "yazhen_powder": 1, "clean_water": 1 },
+      "outputs": { "yazhen_solution": 1 },
+      "region": "wuling"
+    },
+    "ferrium_bottle_yazhen_solution": {
+      "machine": "filling_unit",
+      "time_sec": 2,
+      "inputs": { "ferrium_bottle": 1, "yazhen_solution": 1 },
+      "outputs": { "ferrium_bottle_yazhen_solution": 1 },
+      "region": "wuling"
+    },
+    "yazhen_syringe_c": {
+      "machine": "packaging_unit",
+      "time_sec": 10,
+      "inputs": { "ferrium_part": 10, "ferrium_bottle_yazhen_solution": 5 },
+      "outputs": { "yazhen_syringe_c": 1 },
+      "region": "wuling"
+    },
+    "lc_wuling_battery": {
+      "machine": "packaging_unit",
+      "time_sec": 10,
+      "inputs": { "xiranite": 5, "dense_originium_powder": 15 },
+      "outputs": { "lc_wuling_battery": 1 },
+      "region": "wuling"
     }
   }
 }

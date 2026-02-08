@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from scipy.optimize import linprog, OptimizeResult
+from scipy.optimize import linprog, milp, OptimizeResult, Bounds, LinearConstraint
 
 
 # =============================================================================
@@ -259,9 +259,14 @@ class LPResult:
     storage_analysis: dict[str, dict] = field(default_factory=dict)
 
 
-def solve_portfolio(region: RegionData, min_interval_hours: float) -> LPResult:
+def solve_portfolio(
+    region: RegionData,
+    min_interval_hours: float,
+    use_machine_increments: bool = True,
+    machine_increment: float = 0.25,
+) -> LPResult:
     """
-    Solve the production portfolio optimization problem using LP.
+    Solve the production portfolio optimization problem using MILP.
 
     The problem is:
         Maximize: sum(sale_rate_i * price_i) for all products i
@@ -281,10 +286,19 @@ def solve_portfolio(region: RegionData, min_interval_hours: float) -> LPResult:
 
         5. Non-negativity: all rates >= 0
 
+        6. Machine increment constraint (MILP):
+           production_rate must be a multiple of (base_rate * machine_increment)
+
     Decision variables:
         - production_rate for each non-battery product (or sale_rate for intermediates like xiranite)
         - production_rate for each battery product
         - power_rate for each battery (how much goes to power)
+
+    Args:
+        region: Region data with products and constraints
+        min_interval_hours: Minimum trade interval in hours
+        use_machine_increments: If True, use MILP with 0.25 machine increments
+        machine_increment: Machine count increment (default 0.25)
     """
 
     products = region.products
@@ -297,6 +311,10 @@ def solve_portfolio(region: RegionData, min_interval_hours: float) -> LPResult:
 
     # Check if any product consumes xiranite
     has_xiranite_consumers = any(p.xiranite_consumption > 0 for p in products)
+
+    # Calculate rate increments for each product based on machine_increment
+    # rate_increment = production_rate_per_machine * machine_increment
+    rate_increments = [p.production_rate * machine_increment for p in products]
 
     # Decision variable layout:
     # [prod_rate_0, ..., prod_rate_n-1, power_rate_bat0, ..., power_rate_bat_k-1]
@@ -403,41 +421,104 @@ def solve_portfolio(region: RegionData, min_interval_hours: float) -> LPResult:
             pass
 
     # Bounds
-    bounds = []
+    lower_bounds = np.zeros(n_vars)
+    upper_bounds = np.full(n_vars, np.inf)
+
     for i, p in enumerate(products):
         if p.id == "xiranite" and has_xiranite_consumers:
             # For xiranite with consumers, production_limit is handled above
-            bounds.append((0, None))
+            pass
         elif p.is_battery:
             # Battery bounds: production can be higher than sale (some goes to power)
-            upper = p.production_limit if p.production_limit is not None else None
-            bounds.append((0, upper))
+            if p.production_limit is not None:
+                upper_bounds[i] = p.production_limit
         else:
             # Non-battery: sale rate = production rate, limited by storage
             upper_storage = max_sale_rate
-            upper_limit = p.production_limit if p.production_limit is not None else None
-            if upper_limit is not None:
-                upper = min(upper_storage, upper_limit)
-            else:
-                upper = upper_storage
-            bounds.append((0, upper))
-    # Power rates for batteries
-    for _ in range(n_batteries):
-        bounds.append((0, None))
+            upper_limit = p.production_limit if p.production_limit is not None else np.inf
+            upper_bounds[i] = min(upper_storage, upper_limit)
 
     # Convert to arrays
-    A_ub = np.array(A_ub)
-    b_ub = np.array(b_ub)
+    A_ub = np.array(A_ub) if A_ub else np.zeros((0, n_vars))
+    b_ub = np.array(b_ub) if b_ub else np.zeros(0)
 
-    # Solve
-    result: OptimizeResult = linprog(
-        c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, method="highs"
-    )
+    # Solve using MILP or LP
+    if use_machine_increments:
+        # Use MILP with integer variables for machine counts
+        # Transform: x_i (production rate) = q_i * rate_increment_i
+        # where q_i is a non-negative integer (quarter-machine count)
 
-    if not result.success:
+        # New decision variables: [q_0, ..., q_{n-1}, qp_0, ..., qp_{k-1}]
+        # where q_i = quarter-machine count for product i
+        # and qp_j = quarter-machine count for power allocation of battery j
+
+        # Transform objective: c'[i] = c[i] * rate_increment[i]
+        c_milp = np.zeros(n_vars)
+        for i in range(n_products):
+            c_milp[i] = c[i] * rate_increments[i]
+        for j, bat_idx in enumerate(battery_indices):
+            # Power rate increment is same as production rate increment
+            c_milp[n_products + j] = c[n_products + j] * rate_increments[bat_idx]
+
+        # Transform constraints: A_ub_milp[i] = A_ub[i] * rate_increment
+        A_ub_milp = np.zeros_like(A_ub)
+        for row_idx in range(len(A_ub)):
+            for i in range(n_products):
+                A_ub_milp[row_idx, i] = A_ub[row_idx, i] * rate_increments[i]
+            for j, bat_idx in enumerate(battery_indices):
+                A_ub_milp[row_idx, n_products + j] = A_ub[row_idx, n_products + j] * rate_increments[bat_idx]
+
+        # Transform bounds
+        lower_bounds_milp = np.zeros(n_vars)
+        upper_bounds_milp = np.zeros(n_vars)
+        for i in range(n_products):
+            lower_bounds_milp[i] = 0
+            if np.isinf(upper_bounds[i]):
+                upper_bounds_milp[i] = 10000  # Large upper bound for integers
+            else:
+                # Use floor to ensure we don't exceed storage limits
+                upper_bounds_milp[i] = np.floor(upper_bounds[i] / rate_increments[i])
+        for j, bat_idx in enumerate(battery_indices):
+            lower_bounds_milp[n_products + j] = 0
+            upper_bounds_milp[n_products + j] = upper_bounds_milp[bat_idx]  # Power <= production
+
+        # All variables are integers
+        integrality = np.ones(n_vars, dtype=int)
+
+        # Use scipy.optimize.milp
+        constraints = LinearConstraint(A_ub_milp, -np.inf, b_ub)
+        bounds_milp = Bounds(lower_bounds_milp, upper_bounds_milp)
+
+        result = milp(
+            c_milp,
+            constraints=constraints,
+            bounds=bounds_milp,
+            integrality=integrality,
+        )
+
+        # Transform solution back to rates
+        if result.success:
+            x = np.zeros(n_vars)
+            for i in range(n_products):
+                x[i] = result.x[i] * rate_increments[i]
+            for j, bat_idx in enumerate(battery_indices):
+                x[n_products + j] = result.x[n_products + j] * rate_increments[bat_idx]
+        else:
+            x = None
+    else:
+        # Use standard LP (continuous variables)
+        bounds = [(lower_bounds[i], upper_bounds[i] if not np.isinf(upper_bounds[i]) else None)
+                  for i in range(n_vars)]
+
+        result = linprog(
+            c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, method="highs"
+        )
+        x = result.x if result.success else None
+
+    if not result.success or x is None:
         return LPResult(
             success=False,
-            message=result.message,
+            message=result.message if hasattr(result, 'message') else "Optimization failed",
             ticket_rate=0,
             production_rates={},
             ore_consumption={},
@@ -449,7 +530,6 @@ def solve_portfolio(region: RegionData, min_interval_hours: float) -> LPResult:
         )
 
     # Extract solution
-    x = result.x
     production_rates = {}
     for i, p in enumerate(products):
         if x[i] > 1e-6:
@@ -544,8 +624,8 @@ def format_output(region: RegionData, result: LPResult, interval_hours: float) -
     # Production table
     lines.append("## Production Table")
     lines.append("")
-    lines.append("| Product | Rate (/min) | Originium | Amethyst | Ferrium | Power (unit/sec) | Price |")
-    lines.append("|---------|------------|-----------|----------|---------|------------------|-------|")
+    lines.append("| Product | Machines | Rate (/min) | Originium | Amethyst | Ferrium | Power (unit/sec) | Price |")
+    lines.append("|---------|----------|------------|-----------|----------|---------|------------------|-------|")
 
     products_by_id = {p.id: p for p in region.products}
 
@@ -553,10 +633,12 @@ def format_output(region: RegionData, result: LPResult, interval_hours: float) -
     total_ameth = 0.0
     total_ferr = 0.0
     total_power = 0.0
+    total_machines = 0.0
 
     for prod_id, rate in sorted(result.production_rates.items()):
         p = products_by_id[prod_id]
         scale = rate / p.production_rate
+        machines = scale  # machine count = rate / rate_per_machine
 
         orig = p.originium_ore * scale
         ameth = p.amethyst_ore * scale
@@ -567,19 +649,20 @@ def format_output(region: RegionData, result: LPResult, interval_hours: float) -
         total_ameth += ameth
         total_ferr += ferr
         total_power += power
+        total_machines += machines
 
         orig_str = f"{orig:.0f}" if orig > 0 else "-"
         ameth_str = f"{ameth:.0f}" if ameth > 0 else "-"
         ferr_str = f"{ferr:.0f}" if ferr > 0 else "-"
 
-        lines.append(f"| {p.name_en} | {rate:.2f} | {orig_str} | {ameth_str} | {ferr_str} | {power:.0f} | {p.trade_value} |")
+        lines.append(f"| {p.name_en} | {machines:.2f} | {rate:.2f} | {orig_str} | {ameth_str} | {ferr_str} | {power:.0f} | {p.trade_value} |")
 
     # Totals row
     orig_surplus = region.mining_rates.get("originium_ore", 0) - total_orig
     ameth_surplus = region.mining_rates.get("amethyst_ore", 0) - total_ameth
     ferr_surplus = region.mining_rates.get("ferrium_ore", 0) - total_ferr
 
-    lines.append(f"| **Total** | | **{total_orig:.0f}** (surplus {orig_surplus:.0f}) | **{total_ameth:.0f}** (surplus {ameth_surplus:.0f}) | **{total_ferr:.0f}** (surplus {ferr_surplus:.0f}) | **{total_power:.0f}** | |")
+    lines.append(f"| **Total** | **{total_machines:.2f}** | | **{total_orig:.0f}** (surplus {orig_surplus:.0f}) | **{total_ameth:.0f}** (surplus {ameth_surplus:.0f}) | **{total_ferr:.0f}** (surplus {ferr_surplus:.0f}) | **{total_power:.0f}** | |")
     lines.append("")
 
     # Power allocation

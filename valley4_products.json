@@ -9,26 +9,68 @@
       "name_ja": "谷地取引券",
       "name_en": "Valley Stock Bill",
       "name_zh": "谷地调度券"
-    }
+    },
+    "mining_rates": {
+      "originium_ore": 560,
+      "amethyst_ore": 240,
+      "ferrium_ore": 1080
+    },
+    "storage_limit": 80000
   },
   "outposts": [
     {
-      "id": "central_hub",
-      "name_ja": "中枢エリア",
-      "name_en": "Central Hub",
-      "name_zh": "枢纽区"
+      "id": "refugee_camp",
+      "name_ja": "仮設居住地",
+      "name_en": "Refugee Camp",
+      "ticket_rate": 20820,
+      "ticket_max": 2200000,
+      "products": [
+        "origocrust",
+        "amethyst_bottle",
+        "amethyst_part",
+        "buck_capsule_c",
+        "buck_capsule_b",
+        "buck_capsule_a",
+        "canned_citrome_c",
+        "canned_citrome_b",
+        "canned_citrome_a",
+        "sc_valley_battery",
+        "hc_valley_battery"
+      ]
     },
     {
-      "id": "originium_research_park",
-      "name_ja": "源石研究パーク",
-      "name_en": "Originium Research Park",
-      "name_zh": "源石研究园"
+      "id": "infra_station",
+      "name_ja": "建設基地",
+      "name_en": "Infra-Station",
+      "ticket_rate": 27840,
+      "ticket_max": 3000000,
+      "products": [
+        "ferrium_part",
+        "lc_valley_battery",
+        "sc_valley_battery",
+        "hc_valley_battery",
+        "buck_capsule_b",
+        "buck_capsule_a",
+        "canned_citrome_c",
+        "canned_citrome_b",
+        "canned_citrome_a"
+      ]
     },
     {
-      "id": "power_plateau",
-      "name_ja": "エネルギー高地",
-      "name_en": "Power Plateau",
-      "name_zh": "供能高地"
+      "id": "reconstruction_hq",
+      "name_ja": "再建管理本部",
+      "name_en": "Reconstruction HQ",
+      "ticket_rate": 42840,
+      "ticket_max": 3800000,
+      "products": [
+        "steel_part",
+        "buck_capsule_b",
+        "buck_capsule_a",
+        "canned_citrome_b",
+        "canned_citrome_a",
+        "sc_valley_battery",
+        "hc_valley_battery"
+      ]
     }
   ],
   "products": [

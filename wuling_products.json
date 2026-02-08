@@ -9,20 +9,28 @@
       "name_ja": "武陵取引券",
       "name_en": "Wuling Stock Bill",
       "name_zh": "武陵调度券"
-    }
+    },
+    "mining_rates": {
+      "originium_ore": 360,
+      "amethyst_ore": 0,
+      "ferrium_ore": 90
+    },
+    "storage_limit": 48000
   },
   "outposts": [
     {
-      "id": "jingyu_valley",
-      "name_ja": "景玉谷",
-      "name_en": "Jingyu Valley",
-      "name_zh": "景玉谷"
-    },
-    {
-      "id": "wuling_city",
-      "name_ja": "武陵城",
-      "name_en": "Wuling City",
-      "name_zh": "武陵城"
+      "id": "tianwangyuan",
+      "name_ja": "天王原建設支援拠点",
+      "name_en": "Tianwangyuan Construction Support",
+      "location": "景玉谷",
+      "ticket_rate": 12900,
+      "ticket_max": 1250000,
+      "products": [
+        "xiranite",
+        "yazhen_syringe_c",
+        "lc_wuling_battery",
+        "jincao_drink"
+      ]
     }
   ],
   "products": [
@@ -32,7 +40,8 @@
       "name_en": "Xiranite",
       "name_zh": "息壤",
       "category": "basic_material",
-      "trade_value": 1
+      "trade_value": 1,
+      "production_limit": 60
     },
     {
       "id": "yazhen_syringe_c",

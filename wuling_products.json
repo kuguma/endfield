@@ -49,6 +49,14 @@
       "name_zh": "低容武陵电池",
       "category": "battery",
       "trade_value": 25
+    },
+    {
+      "id": "jincao_drink",
+      "name_ja": "錦草ソーダ",
+      "name_en": "Jincao Drink",
+      "name_zh": "锦草汽水",
+      "category": "consumable",
+      "trade_value": 16
     }
   ]
 }

@@ -45,6 +45,10 @@
     "dense_carbon_powder":    { "name_en": "Dense Carbon Powder",    "name_ja": "高純度炭素パウダー",     "type": "intermediate", "region": "wuling" },
     "stabilized_carbon":      { "name_en": "Stabilized Carbon",      "name_ja": "安定化炭素",             "type": "intermediate", "region": "wuling" },
     "xiranite":               { "name_en": "Xiranite",               "name_ja": "息壌",                   "type": "product", "region": "wuling" },
+    "jincao_powder":          { "name_en": "Jincao Powder",          "name_ja": "錦草パウダー",           "type": "intermediate", "region": "wuling" },
+    "jincao_solution":        { "name_en": "Jincao Solution",        "name_ja": "錦草溶液",               "type": "intermediate", "region": "wuling" },
+    "ferrium_bottle_jincao_solution": { "name_en": "Ferrium Bottle (Jincao Solution)", "name_ja": "鉄青製ボトル（錦草溶液）", "type": "intermediate", "region": "wuling" },
+    "jincao_drink":           { "name_en": "Jincao Drink",           "name_ja": "錦草ソーダ",             "type": "product", "region": "wuling" },
     "yazhen_powder":          { "name_en": "Yazhen Powder",          "name_ja": "芽針パウダー",           "type": "intermediate", "region": "wuling" },
     "yazhen_solution":        { "name_en": "Yazhen Solution",        "name_ja": "芽針溶液",               "type": "intermediate", "region": "wuling" },
     "ferrium_bottle_yazhen_solution": { "name_en": "Ferrium Bottle (Yazhen Solution)", "name_ja": "鉄青製ボトル（芽針溶液）", "type": "intermediate", "region": "wuling" },
@@ -269,6 +273,34 @@
       "time_sec": 2,
       "inputs": { "stabilized_carbon": 2, "clean_water": 1 },
       "outputs": { "xiranite": 1 },
+      "region": "wuling"
+    },
+    "jincao_powder": {
+      "machine": "shredding_unit",
+      "time_sec": 2,
+      "inputs": { "jincao": 1 },
+      "outputs": { "jincao_powder": 2 },
+      "region": "wuling"
+    },
+    "jincao_solution": {
+      "machine": "reactor_crucible",
+      "time_sec": 2,
+      "inputs": { "jincao_powder": 1, "clean_water": 1 },
+      "outputs": { "jincao_solution": 1 },
+      "region": "wuling"
+    },
+    "ferrium_bottle_jincao_solution": {
+      "machine": "filling_unit",
+      "time_sec": 2,
+      "inputs": { "ferrium_bottle": 1, "jincao_solution": 1 },
+      "outputs": { "ferrium_bottle_jincao_solution": 1 },
+      "region": "wuling"
+    },
+    "jincao_drink": {
+      "machine": "packaging_unit",
+      "time_sec": 10,
+      "inputs": { "ferrium_part": 10, "ferrium_bottle_jincao_solution": 5 },
+      "outputs": { "jincao_drink": 1 },
       "region": "wuling"
     },
     "yazhen_powder": {

@@ -16,7 +16,7 @@
       "ferrium_ore": 90
     },
     "storage_limit": 48000,
-    "power_buffer": 2000
+    "power_buffer": 800
   },
   "outposts": [
     {

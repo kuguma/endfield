@@ -1,6 +1,8 @@
-# 最適生産ポートフォリオ（整数刻み）
+# 最適生産ポートフォリオ：四号谷地
 
 LPソルバーによる最適解。マシン台数は整数、貯蔵損失ゼロ。
+
+より細かい刻みで効率向上: [0.5刻み](optimization_solved_valley4_half.md) | [0.25刻み](optimization_solved_valley4_quarter.md)
 
 ## 四号谷地（Valley IV）
 

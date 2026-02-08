@@ -1,6 +1,8 @@
-# 最適生産ポートフォリオ：武陵（整数刻み）
+# 最適生産ポートフォリオ：武陵
 
 LPソルバーによる最適解。マシン台数は整数、貯蔵損失ゼロ。
+
+より細かい刻みで効率向上: [0.5刻み](optimization_solved_wuling_half.md) | [0.25刻み](optimization_solved_wuling_quarter.md)
 
 ## 武陵（Wuling）
 

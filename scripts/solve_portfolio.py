@@ -782,6 +782,13 @@ def main():
         default=None,
         help="Override default power buffer (unit/sec)",
     )
+    parser.add_argument(
+        "-i", "--increment",
+        type=int,
+        choices=[1, 2, 3, 4],
+        default=4,
+        help="Machine increment divisor: 1=integer, 2=0.5, 3=0.333, 4=0.25 (default: 4)",
+    )
 
     args = parser.parse_args()
 
@@ -799,7 +806,10 @@ def main():
     if args.power_buffer is not None:
         region.power_buffer = args.power_buffer
 
-    result = solve_portfolio(region, args.interval)
+    # Calculate machine increment from CLI argument
+    machine_increment = 1.0 / args.increment
+
+    result = solve_portfolio(region, args.interval, machine_increment=machine_increment)
 
     if args.json:
         output = {

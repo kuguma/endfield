@@ -242,6 +242,84 @@ def _build_wuling_products() -> list[Product]:
 # LP Formulation
 # =============================================================================
 
+def analyze_outpost_tickets(
+    outposts: list[dict],
+    ticket_rate: float,
+    interval_hours: float,
+    bonus_rate: float = 1.0,
+) -> OutpostTicketAnalysis:
+    """
+    Analyze outpost ticket accumulation limits.
+
+    Args:
+        outposts: List of outpost data from region JSON
+        ticket_rate: Production rate in tickets/min
+        interval_hours: Sale interval in hours
+        bonus_rate: Bonus multiplier for accumulation (e.g., 1.4 for +40%)
+
+    Returns:
+        OutpostTicketAnalysis with detailed breakdown
+    """
+    interval_minutes = interval_hours * 60
+    produced_tickets = ticket_rate * interval_minutes
+
+    total_accumulated = 0.0
+    total_limit = 0.0
+    outpost_details = []
+
+    for outpost in outposts:
+        rate_per_hour = outpost["ticket_rate"] * bonus_rate
+        limit = outpost["ticket_max"]
+
+        # Accumulation over interval (capped by limit)
+        accumulated = min(rate_per_hour * interval_hours, limit)
+
+        total_accumulated += accumulated
+        total_limit += limit
+
+        outpost_details.append({
+            "id": outpost["id"],
+            "name_ja": outpost["name_ja"],
+            "rate_per_hour": rate_per_hour,
+            "limit": limit,
+            "accumulated": accumulated,
+            "at_limit": accumulated >= limit,
+            "hours_to_limit": limit / rate_per_hour if rate_per_hour > 0 else float("inf"),
+        })
+
+    available_tickets = min(total_accumulated, total_limit)
+    effective_tickets = min(produced_tickets, available_tickets)
+    effective_rate = effective_tickets / interval_minutes if interval_minutes > 0 else 0
+    is_limited = produced_tickets > available_tickets
+    limit_ratio = effective_tickets / produced_tickets if produced_tickets > 0 else 1.0
+
+    return OutpostTicketAnalysis(
+        total_accumulated=total_accumulated,
+        total_limit=total_limit,
+        available_tickets=available_tickets,
+        produced_tickets=produced_tickets,
+        effective_tickets=effective_tickets,
+        effective_rate=effective_rate,
+        is_limited=is_limited,
+        limit_ratio=limit_ratio,
+        outpost_details=outpost_details,
+    )
+
+
+@dataclass
+class OutpostTicketAnalysis:
+    """Analysis of outpost ticket accumulation limits."""
+    total_accumulated: float  # tickets accumulated over interval
+    total_limit: float  # sum of all outpost limits
+    available_tickets: float  # min(accumulated, limit)
+    produced_tickets: float  # tickets produced over interval
+    effective_tickets: float  # min(produced, available)
+    effective_rate: float  # effective tickets per minute
+    is_limited: bool  # True if outpost limit constrains sales
+    limit_ratio: float  # effective / produced (1.0 = no limitation)
+    outpost_details: list[dict]  # per-outpost breakdown
+
+
 @dataclass
 class LPResult:
     """Result of the LP optimization."""
@@ -256,6 +334,7 @@ class LPResult:
     battery_for_power: dict[str, float]  # battery_id -> rate used for power
     battery_for_sale: dict[str, float]  # battery_id -> rate for sale
     storage_analysis: dict[str, dict] = field(default_factory=dict)
+    outpost_analysis: OutpostTicketAnalysis | None = None
 
 
 def solve_portfolio(
@@ -588,6 +667,14 @@ def solve_portfolio(
                 "loss_percent": storage_loss / production * 100 if production > 0 else 0,
             }
 
+    # Analyze outpost ticket limits
+    outpost_analysis = analyze_outpost_tickets(
+        region.outposts,
+        total_ticket_rate,
+        min_interval_hours,
+        bonus_rate=1.0,  # No bonus assumed; user can check with bonus separately
+    )
+
     return LPResult(
         success=True,
         message="Optimal solution found",
@@ -600,6 +687,7 @@ def solve_portfolio(
         battery_for_power=battery_for_power,
         battery_for_sale=battery_for_sale,
         storage_analysis=storage_analysis,
+        outpost_analysis=outpost_analysis,
     )
 
 
@@ -743,12 +831,45 @@ def format_output(region: RegionData, result: LPResult, interval_hours: float) -
     effective_tickets = produced_tickets - total_loss_value
     effective_rate = effective_tickets / interval_minutes
 
-    lines.append("## Effective Rate")
+    lines.append("## Effective Rate (Storage)")
     lines.append("")
     lines.append(f"| Interval | Production | Storage Loss | Effective | Effective Rate |")
     lines.append(f"|----------|------------|--------------|-----------|----------------|")
     lines.append(f"| {interval_hours}h | {produced_tickets:.0f} | {total_loss_value:.0f} | {effective_tickets:.0f} | **{effective_rate:.2f}/min** |")
     lines.append("")
+
+    # Outpost ticket analysis
+    if result.outpost_analysis:
+        oa = result.outpost_analysis
+        lines.append("## Outpost Ticket Analysis")
+        lines.append("")
+        lines.append("| Outpost | Rate (/h) | Limit | Accumulated | At Limit? |")
+        lines.append("|---------|-----------|-------|-------------|-----------|")
+
+        for detail in oa.outpost_details:
+            at_limit_str = "⚠️ Yes" if detail["at_limit"] else "No"
+            lines.append(f"| {detail['name_ja']} | {detail['rate_per_hour']:.0f} | {detail['limit']:,} | {detail['accumulated']:,.0f} | {at_limit_str} |")
+
+        lines.append(f"| **Total** | | **{oa.total_limit:,.0f}** | **{oa.available_tickets:,.0f}** | |")
+        lines.append("")
+
+        # Warning if limited
+        if oa.is_limited:
+            lines.append("### ⚠️ WARNING: Outpost Ticket Limit Reached")
+            lines.append("")
+            lines.append(f"Production ({oa.produced_tickets:,.0f} tickets) exceeds available outpost tickets ({oa.available_tickets:,.0f}).")
+            lines.append("")
+            lines.append(f"| Metric | Value |")
+            lines.append(f"|--------|-------|")
+            lines.append(f"| Theoretical Rate | {result.ticket_rate:.2f}/min |")
+            lines.append(f"| **Effective Rate (Outpost Limited)** | **{oa.effective_rate:.2f}/min** |")
+            lines.append(f"| Efficiency Loss | {(1 - oa.limit_ratio) * 100:.1f}% |")
+            lines.append("")
+            lines.append("Consider shorter sale intervals or applying defense mission bonuses (+40% for Valley IV, +30% for Wuling).")
+            lines.append("")
+        else:
+            lines.append(f"✅ Outpost capacity sufficient: {oa.available_tickets:,.0f} available vs {oa.produced_tickets:,.0f} produced")
+            lines.append("")
 
     return "\n".join(lines)
 
@@ -811,6 +932,20 @@ def main():
     result = solve_portfolio(region, args.interval, machine_increment=machine_increment)
 
     if args.json:
+        outpost_data = None
+        if result.outpost_analysis:
+            oa = result.outpost_analysis
+            outpost_data = {
+                "total_accumulated": oa.total_accumulated,
+                "total_limit": oa.total_limit,
+                "available_tickets": oa.available_tickets,
+                "produced_tickets": oa.produced_tickets,
+                "effective_tickets": oa.effective_tickets,
+                "effective_rate": oa.effective_rate,
+                "is_limited": oa.is_limited,
+                "limit_ratio": oa.limit_ratio,
+                "outpost_details": oa.outpost_details,
+            }
         output = {
             "success": result.success,
             "message": result.message,
@@ -823,6 +958,7 @@ def main():
             "battery_for_power": result.battery_for_power,
             "battery_for_sale": result.battery_for_sale,
             "storage_analysis": result.storage_analysis,
+            "outpost_analysis": outpost_data,
         }
         print(json.dumps(output, indent=2))
     else:

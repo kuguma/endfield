@@ -101,9 +101,8 @@ def load_region_data(region_id: str, base_path: Path) -> RegionData:
         products=products,
         outposts=data["outposts"],
         # Power buffer for map facilities (turrets, ziplines, transfer storage)
-        # Valley IV: 5 maps × (12 turrets × 20 + 30 ziplines × 5) ≈ 2000 unit/sec
-        # Wuling: 2 maps but documented solution shows no buffer, so we set to 0 for now
-        power_buffer=2000.0 if region_id.lower() in ("valley_iv", "valley4") else 0.0,
+        # Read from region JSON, fallback to 0 if not specified
+        power_buffer=region_info.get("power_buffer", 0.0),
     )
 
 

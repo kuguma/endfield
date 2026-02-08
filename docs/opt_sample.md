@@ -64,7 +64,7 @@
 
 ## 最適解との比較
 
-最適解は [optimization_solved_quarter.md](optimization_solved_quarter.md) を参照（LPソルバーによる0.25刻み解）。
+最適解は [optimization_solved_valley4_quarter.md](optimization_solved_valley4_quarter.md) を参照（LPソルバーによる0.25刻み解）。
 
 | 項目 | 現行 | 最適解 | 差分 |
 |---|--:|--:|--:|
@@ -106,4 +106,4 @@ LPソルバーによる最適解（0.25刻み）を参照:
 - **HC+LC混合戦略**: HC 12/min + LC 19.5/min を生産し、電力用と出荷を最適配分
 - **期待効果**: 2,175 → 2,306 券/min（+6.0%）
 
-詳細は [optimization_solved_quarter.md](optimization_solved_quarter.md) を参照。
+詳細は [optimization_solved_valley4_quarter.md](optimization_solved_valley4_quarter.md) を参照。

@@ -530,13 +530,18 @@ def solve_portfolio(
         # where q_i = quarter-machine count for product i
         # and qp_j = quarter-machine count for power allocation of battery j
 
+        # Power allocation is always in 0.25 increments (1 generator = 0.25 production machine)
+        # This is independent of the production machine increment
+        power_increment = 0.25
+        power_rate_increments = [p.production_rate * power_increment for p in products]
+
         # Transform objective: c'[i] = c[i] * rate_increment[i]
         c_milp = np.zeros(n_vars)
         for i in range(n_products):
             c_milp[i] = c[i] * rate_increments[i]
         for j, bat_idx in enumerate(battery_indices):
-            # Power rate increment is same as production rate increment
-            c_milp[n_products + j] = c[n_products + j] * rate_increments[bat_idx]
+            # Power rate increment is always 0.25 (generator granularity)
+            c_milp[n_products + j] = c[n_products + j] * power_rate_increments[bat_idx]
 
         # Transform constraints: A_ub_milp[i] = A_ub[i] * rate_increment
         A_ub_milp = np.zeros_like(A_ub)
@@ -544,7 +549,8 @@ def solve_portfolio(
             for i in range(n_products):
                 A_ub_milp[row_idx, i] = A_ub[row_idx, i] * rate_increments[i]
             for j, bat_idx in enumerate(battery_indices):
-                A_ub_milp[row_idx, n_products + j] = A_ub[row_idx, n_products + j] * rate_increments[bat_idx]
+                # Power allocation always uses 0.25 increment
+                A_ub_milp[row_idx, n_products + j] = A_ub[row_idx, n_products + j] * power_rate_increments[bat_idx]
 
         # Transform bounds
         lower_bounds_milp = np.zeros(n_vars)
@@ -558,7 +564,11 @@ def solve_portfolio(
                 upper_bounds_milp[i] = np.floor(upper_bounds[i] / rate_increments[i])
         for j, bat_idx in enumerate(battery_indices):
             lower_bounds_milp[n_products + j] = 0
-            upper_bounds_milp[n_products + j] = upper_bounds_milp[bat_idx]  # Power <= production
+            # Power upper bound: production (in production increments) converted to power increments
+            # power_rate <= production_rate
+            # power_units * power_increment <= prod_units * machine_increment
+            # power_units <= prod_units * machine_increment / power_increment
+            upper_bounds_milp[n_products + j] = upper_bounds_milp[bat_idx] * machine_increment / power_increment
 
         # All variables are integers
         integrality = np.ones(n_vars, dtype=int)
@@ -580,7 +590,8 @@ def solve_portfolio(
             for i in range(n_products):
                 x[i] = result.x[i] * rate_increments[i]
             for j, bat_idx in enumerate(battery_indices):
-                x[n_products + j] = result.x[n_products + j] * rate_increments[bat_idx]
+                # Power allocation uses 0.25 increment
+                x[n_products + j] = result.x[n_products + j] * power_rate_increments[bat_idx]
         else:
             x = None
     else:

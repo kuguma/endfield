@@ -15,7 +15,8 @@
       "amethyst_ore": 240,
       "ferrium_ore": 1080
     },
-    "storage_limit": 80000
+    "storage_limit": 80000,
+    "power_buffer": 2000
   },
   "outposts": [
     {

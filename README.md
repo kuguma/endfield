@@ -18,11 +18,14 @@ endfield_db/
 ├── valley4_products.json        # 四号谷地の出荷製品データベース
 ├── wuling_products.json         # 武陵の出荷製品データベース
 ├── recipes.json                 # 生産レシピ・マシン電力データベース
+├── scripts/
+│   └── solve_portfolio.py       # LPソルバー
 └── docs/
     ├── valley4_analysis.md      # 四号谷地 出荷製品の効率分析
     ├── wuling_analysis.md       # 武陵 出荷製品の効率分析
     ├── optimization_problem.md  # 生産ポートフォリオ最適化問題
-    └── optimization_solved.md   # 最適化 - 解
+    ├── optimization_solved_valley4.md  # 四号谷地 最適解
+    └── optimization_solved_wuling.md   # 武陵 最適解
 ```
 
 ## データベース
@@ -179,12 +182,14 @@ endfield_db/
 
 [生産ポートフォリオ最適化問題](docs/optimization_problem.md) では、取引券生産レートを最大化する製品ポートフォリオの求め方を定式化しています。
 
-[最適化 - 解](docs/optimization_solved.md) では、各地域の最適ポートフォリオを記載しています。
+LPソルバー（`scripts/solve_portfolio.py`）により各地域の最適ポートフォリオを算出:
 
-| 地域 | 取引券レート | 鉱石利用率 |
-|---|--:|---|
-| 四号谷地 | 2,340/min | 源石97%, 紫晶100%, 青鉄100% |
-| 武陵 | 279.5/min | 源石100%, 青鉄100%（蓄積レート律速） |
+| 地域 | 取引券レート | 鉱石利用率 | 詳細 |
+|---|--:|---|---|
+| 四号谷地 | 2,256/min | 源石96%, 紫晶100%, 青鉄100% | [解](docs/optimization_solved_valley4.md) |
+| 武陵 | 150/min | 源石100%, 青鉄0% | [解](docs/optimization_solved_wuling.md) |
+
+※マシン台数整数刻み。0.25刻みにするとさらに効率向上（各ドキュメント参照）
 
 ## データソース
 

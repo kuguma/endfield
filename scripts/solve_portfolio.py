@@ -231,12 +231,12 @@ def _build_wuling_products() -> list[Product]:
             ferrium_ore=120.0, power_consumption=175.0,
         ),
 
-        # Yazhen Syringe A (芽針注射剤A) - v1.1
+        # Yazhen Syringe A (芽針注射剤Ⅱ) - v1.1
         # Chain: Cuprium → Part (Fitting) + Bottle (Moulding) → Bottle+Yazhen (Filling)
         # Processing: Packaging(20) + Fitting×2(40) + Refining×2(10) + Filling(20)
         #           + Moulding(10) + Refining×2(10) + Reactor(50) + Shredding(5) = 165
         Product(
-            id="yazhen_syringe_a", name_ja="芽針注射剤A", name_en="Yazhen Syringe A",
+            id="yazhen_syringe_a", name_ja="芽針注射剤Ⅱ", name_en="Yazhen Syringe A",
             trade_value=22, production_rate=6.0,
             cuprium_ore=120.0, power_consumption=165.0,
         ),

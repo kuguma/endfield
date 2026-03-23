@@ -559,8 +559,9 @@ def solve_portfolio(
 
     for i, p in enumerate(products):
         if p.id == "xiranite" and has_xiranite_consumers:
-            # For xiranite with consumers, production_limit is handled above
-            pass
+            # For xiranite with consumers, production_limit is handled by constraint above.
+            # But storage limit still applies to the sales rate variable.
+            upper_bounds[i] = max_sale_rate
         elif p.is_battery:
             # Battery bounds: production can be higher than sale (some goes to power)
             if p.production_limit is not None:

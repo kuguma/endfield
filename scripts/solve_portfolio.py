@@ -206,7 +206,7 @@ def _build_wuling_products() -> list[Product]:
             id="xiranite", name_ja="息壌", name_en="Xiranite",
             trade_value=1, production_rate=30.0,
             power_consumption=77.5,
-            production_limit=60.0,  # Max 2 Forge of the Sky
+            production_limit=120.0,  # Max 4 Forge of the Sky (v1.1: 洪炉拡張Ⅱ)
         ),
 
         # Cuprium Part (赤銅部品) - v1.1

@@ -46,6 +46,8 @@ class Product:
     # Intermediate material requirements (for Wuling)
     xiranite_consumption: float = 0.0  # xiranite consumed per minute at production_rate
     sandleaf_consumption: float = 0.0  # sandleaf consumed per minute at production_rate
+    sewage_production: float = 0.0  # sewage produced per minute at production_rate (from cuprium refining)
+    sewage_consumption: float = 0.0  # net sewage consumed per minute at production_rate
 
 
 @dataclass
@@ -211,10 +213,12 @@ def _build_wuling_products() -> list[Product]:
 
         # Cuprium Part (赤銅部品) - v1.1
         # Chain: Cuprium Ore + Clean Water → Cuprium (Refining 5) → Cuprium Part (Fitting 20)
+        # Cuprium refining produces 1 Sewage per Cuprium as byproduct
         Product(
             id="cuprium_part", name_ja="赤銅部品", name_en="Cuprium Part",
             trade_value=1, production_rate=30.0,
             cuprium_ore=30.0, power_consumption=25.0,
+            sewage_production=30.0,  # 1 sewage per cuprium refined
         ),
 
         # Jincao Drink (錦草ソーダ)
@@ -235,10 +239,12 @@ def _build_wuling_products() -> list[Product]:
         # Chain: Cuprium → Part (Fitting) + Bottle (Moulding) → Bottle+Yazhen (Filling)
         # Processing: Packaging(20) + Fitting×2(40) + Refining×2(10) + Filling(20)
         #           + Moulding(10) + Refining×2(10) + Reactor(50) + Shredding(5) = 165
+        # Cuprium refining: 120/min at 6/min (60 for Part + 60 for Bottle) → 120 Sewage/min
         Product(
             id="yazhen_syringe_a", name_ja="芽針注射剤Ⅱ", name_en="Yazhen Syringe A",
             trade_value=22, production_rate=6.0,
             cuprium_ore=120.0, power_consumption=165.0,
+            sewage_production=120.0,  # 1 sewage per cuprium refined (120 cuprium/min at 6/min)
         ),
 
         # LC Wuling Battery
@@ -255,19 +261,19 @@ def _build_wuling_products() -> list[Product]:
 
         # SC Wuling Battery (中容量武陵バッテリー) - v1.1
         # Chain: Xircon (from Xiranite→LiquidXiranite→XirconEffluent→Xircon) + DOP
-        # Requires Sewage for Xircon Effluent; deficit sourced from Cuprium refining
+        # Sewage balance: Xircon Effluent needs 60/min, Xircon produces 30/min → net 30/min deficit
+        # Sewage must be supplied by other Cuprium products (shared constraint)
         # Processing: Packaging(20) + Xircon chain(160) + Xiranite chain(155)
-        #           + Cuprium refining for Sewage(5) + DOP chain(246.67) = 686.67
+        #           + DOP chain(246.67) = 681.67
         # Ferrium Ore: 30/min for Ferrium Powder → Xircon
-        # Cuprium Ore: 30/min for Sewage via Cuprium refining (conservative estimate;
-        #   actual need may be lower if Sewage is shared from other Cuprium products)
         Product(
             id="sc_wuling_battery", name_ja="中容量武陵バッテリー", name_en="SC Wuling Battery",
             trade_value=54, production_rate=6.0,
-            originium_ore=240.0, ferrium_ore=30.0, cuprium_ore=30.0,
-            power_consumption=686.67,
+            originium_ore=240.0, ferrium_ore=30.0,
+            power_consumption=681.67,
             xiranite_consumption=60.0,  # 60 xiranite/min for Xircon chain at 6/min
             sandleaf_consumption=40.0,  # for 120 DOP/min (20 per battery)
+            sewage_consumption=30.0,  # net: 60 needed for XE - 30 from Xircon byproduct
             is_battery=True, battery_power=2133.33,  # 3200 power * 40 sec / 60 sec/min
         ),
     ]
@@ -514,7 +520,19 @@ def solve_portfolio(
             A_ub.append(row)
             b_ub.append(xiranite_product.production_limit)
 
-    # 5. Storage limit constraints
+    # 5. Sewage balance constraint
+    # sum(sewage_consumption_i * rate_i / prod_rate_i) <= sum(sewage_production_i * rate_i / prod_rate_i)
+    # SC Battery needs sewage from Cuprium refining byproducts of other products
+    has_sewage = any(p.sewage_consumption > 0 or p.sewage_production > 0 for p in products)
+    if has_sewage:
+        row = np.zeros(n_vars)
+        for i, p in enumerate(products):
+            net = (p.sewage_consumption - p.sewage_production) / p.production_rate if p.production_rate > 0 else 0
+            row[i] = net
+        A_ub.append(row)
+        b_ub.append(0)
+
+    # 6. Storage limit constraints
     # For each non-battery product: sale_rate * interval_minutes <= storage_limit
     # For batteries: (prod_rate - power_rate) * interval_minutes <= storage_limit
     interval_minutes = min_interval_hours * 60

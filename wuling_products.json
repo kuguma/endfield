@@ -13,7 +13,8 @@
     "mining_rates": {
       "originium_ore": 360,
       "amethyst_ore": 0,
-      "ferrium_ore": 90
+      "ferrium_ore": 90,
+      "cuprium_ore": 120
     },
     "storage_limit": 48000,
     "power_buffer": 800
@@ -22,15 +23,18 @@
     {
       "id": "tianwangyuan",
       "name_ja": "天王原建設支援拠点",
-      "name_en": "Tianwangyuan Construction Support",
+      "name_en": "Sky King Flats Construction Site",
       "location": "景玉谷",
-      "ticket_rate": 12900,
-      "ticket_max": 1250000,
+      "ticket_rate": 26880,
+      "ticket_max": 2600000,
       "products": [
         "xiranite",
-        "yazhen_syringe_c",
         "lc_wuling_battery",
-        "jincao_drink"
+        "cuprium_part",
+        "jincao_drink",
+        "yazhen_syringe_c",
+        "sc_wuling_battery",
+        "yazhen_syringe_a"
       ]
     }
   ],
@@ -45,12 +49,36 @@
       "production_limit": 60
     },
     {
+      "id": "cuprium_part",
+      "name_ja": "赤銅部品",
+      "name_en": "Cuprium Part",
+      "name_zh": "赤铜零件",
+      "category": "basic_material",
+      "trade_value": 1
+    },
+    {
+      "id": "jincao_drink",
+      "name_ja": "錦草ソーダ",
+      "name_en": "Jincao Drink",
+      "name_zh": "锦草汽水",
+      "category": "consumable",
+      "trade_value": 16
+    },
+    {
       "id": "yazhen_syringe_c",
       "name_ja": "芽針注射剤Ⅰ",
       "name_en": "Yazhen Syringe (C)",
       "name_zh": "芽针针剂",
       "category": "syringe",
       "trade_value": 16
+    },
+    {
+      "id": "yazhen_syringe_a",
+      "name_ja": "芽針注射剤A",
+      "name_en": "Yazhen Syringe (A)",
+      "name_zh": "芽针针剂A",
+      "category": "syringe",
+      "trade_value": 22
     },
     {
       "id": "lc_wuling_battery",
@@ -61,12 +89,12 @@
       "trade_value": 25
     },
     {
-      "id": "jincao_drink",
-      "name_ja": "錦草ソーダ",
-      "name_en": "Jincao Drink",
-      "name_zh": "锦草汽水",
-      "category": "consumable",
-      "trade_value": 16
+      "id": "sc_wuling_battery",
+      "name_ja": "中容量武陵バッテリー",
+      "name_en": "SC Wuling Battery",
+      "name_zh": "中容武陵电池",
+      "category": "battery",
+      "trade_value": 54
     }
   ]
 }

@@ -9,7 +9,8 @@
     "packaging_unit": { "name_en": "Packaging Unit", "name_ja": "梱包ユニット", "power": 20 },
     "thermal_bank": { "name_en": "Thermal Bank", "name_ja": "サーマルバンク", "power": 0, "note": "power generator" },
     "forge_of_the_sky": { "name_en": "Forge of the Sky", "name_ja": "天穹の炉", "power": 50, "region": "wuling" },
-    "reactor_crucible": { "name_en": "Reactor Crucible", "name_ja": "化学反応炉", "power": 50, "region": "wuling" }
+    "reactor_crucible": { "name_en": "Reactor Crucible", "name_ja": "化学反応炉", "power": 50, "region": "wuling" },
+    "gearing_unit": { "name_en": "Gearing Unit", "name_ja": "歯車加工ユニット", "power": 10, "region": "wuling" }
   },
   "items": {
     "originium_ore":          { "name_en": "Originium Ore",          "name_ja": "源石鉱",                "type": "raw_ore" },
@@ -53,7 +54,21 @@
     "yazhen_solution":        { "name_en": "Yazhen Solution",        "name_ja": "芽針溶液",               "type": "intermediate", "region": "wuling" },
     "ferrium_bottle_yazhen_solution": { "name_en": "Ferrium Bottle (Yazhen Solution)", "name_ja": "鉄青製ボトル（芽針溶液）", "type": "intermediate", "region": "wuling" },
     "yazhen_syringe_c":       { "name_en": "Yazhen Syringe (C)",     "name_ja": "芽針注射剤Ⅰ",           "type": "product", "region": "wuling" },
+    "cuprium_ore":             { "name_en": "Cuprium Ore",            "name_ja": "赤銅鉱",                 "type": "raw_ore", "region": "wuling" },
+    "cuprium":                 { "name_en": "Cuprium",                "name_ja": "赤銅",                   "type": "intermediate", "region": "wuling" },
+    "cuprium_part":            { "name_en": "Cuprium Part",           "name_ja": "赤銅部品",               "type": "product", "region": "wuling" },
+    "cuprium_bottle":          { "name_en": "Cuprium Bottle",         "name_ja": "赤銅製ボトル",           "type": "intermediate", "region": "wuling" },
+    "sewage":                  { "name_en": "Sewage",                 "name_ja": "汚水",                   "type": "intermediate", "region": "wuling" },
+    "liquid_xiranite":         { "name_en": "Liquid Xiranite",        "name_ja": "液状息壌",               "type": "intermediate", "region": "wuling" },
+    "xircon_effluent":         { "name_en": "Xircon Effluent",        "name_ja": "錫晶廃液",               "type": "intermediate", "region": "wuling" },
+    "inert_xircon_effluent":   { "name_en": "Inert Xircon Effluent",  "name_ja": "不活性錫晶廃液",         "type": "intermediate", "region": "wuling" },
+    "xircon":                  { "name_en": "Xircon",                 "name_ja": "錫晶",                   "type": "intermediate", "region": "wuling" },
+    "cuprium_bottle_yazhen_solution":  { "name_en": "Cuprium Bottle (Yazhen Solution)",  "name_ja": "赤銅製ボトル（芽針溶液）",  "type": "intermediate", "region": "wuling" },
+    "cuprium_bottle_jincao_solution":  { "name_en": "Cuprium Bottle (Jincao Solution)",  "name_ja": "赤銅製ボトル（錦草溶液）",  "type": "intermediate", "region": "wuling" },
     "lc_wuling_battery":      { "name_en": "LC Wuling Battery",      "name_ja": "小容量武陵バッテリー",   "type": "product", "region": "wuling" },
+    "sc_wuling_battery":      { "name_en": "SC Wuling Battery",      "name_ja": "中容量武陵バッテリー",   "type": "product", "region": "wuling" },
+    "yazhen_syringe_a":       { "name_en": "Yazhen Syringe (A)",     "name_ja": "芽針注射剤A",            "type": "product", "region": "wuling" },
+    "jincao_tea":             { "name_en": "Jincao Tea",             "name_ja": "錦草茶",                 "type": "product", "region": "wuling" },
     "buck_capsule_c":         { "name_en": "Buck Capsule C",         "name_ja": "蕎花カプセルⅠ",         "type": "product" },
     "buck_capsule_b":         { "name_en": "Buck Capsule B",         "name_ja": "蕎花カプセルⅡ",         "type": "product" },
     "buck_capsule_a":         { "name_en": "Buck Capsule A",         "name_ja": "蕎花カプセルⅢ",         "type": "product" },
@@ -336,6 +351,83 @@
       "time_sec": 10,
       "inputs": { "xiranite": 5, "dense_originium_powder": 15 },
       "outputs": { "lc_wuling_battery": 1 },
+      "region": "wuling"
+    },
+    "cuprium": {
+      "machine": "refining_unit",
+      "time_sec": 2,
+      "inputs": { "cuprium_ore": 1, "clean_water": 1 },
+      "outputs": { "cuprium": 1, "sewage": 1 },
+      "region": "wuling"
+    },
+    "cuprium_part": {
+      "machine": "fitting_unit",
+      "time_sec": 2,
+      "inputs": { "cuprium": 1 },
+      "outputs": { "cuprium_part": 1 },
+      "region": "wuling"
+    },
+    "cuprium_bottle": {
+      "machine": "moulding_unit",
+      "time_sec": 2,
+      "inputs": { "cuprium": 2 },
+      "outputs": { "cuprium_bottle": 1 },
+      "region": "wuling"
+    },
+    "cuprium_bottle_yazhen_solution": {
+      "machine": "filling_unit",
+      "time_sec": 2,
+      "inputs": { "cuprium_bottle": 1, "yazhen_solution": 1 },
+      "outputs": { "cuprium_bottle_yazhen_solution": 1 },
+      "region": "wuling"
+    },
+    "cuprium_bottle_jincao_solution": {
+      "machine": "filling_unit",
+      "time_sec": 2,
+      "inputs": { "cuprium_bottle": 1, "jincao_solution": 1 },
+      "outputs": { "cuprium_bottle_jincao_solution": 1 },
+      "region": "wuling"
+    },
+    "liquid_xiranite": {
+      "machine": "reactor_crucible",
+      "time_sec": 2,
+      "inputs": { "xiranite": 1, "clean_water": 1 },
+      "outputs": { "liquid_xiranite": 1 },
+      "region": "wuling"
+    },
+    "xircon_effluent": {
+      "machine": "reactor_crucible",
+      "time_sec": 2,
+      "inputs": { "liquid_xiranite": 1, "sewage": 1 },
+      "outputs": { "xircon_effluent": 1, "inert_xircon_effluent": 1 },
+      "region": "wuling"
+    },
+    "xircon": {
+      "machine": "reactor_crucible",
+      "time_sec": 2,
+      "inputs": { "xircon_effluent": 2, "ferrium_powder": 1 },
+      "outputs": { "xircon": 1, "sewage": 1 },
+      "region": "wuling"
+    },
+    "sc_wuling_battery": {
+      "machine": "packaging_unit",
+      "time_sec": 10,
+      "inputs": { "xircon": 5, "dense_originium_powder": 20 },
+      "outputs": { "sc_wuling_battery": 1 },
+      "region": "wuling"
+    },
+    "yazhen_syringe_a": {
+      "machine": "packaging_unit",
+      "time_sec": 10,
+      "inputs": { "cuprium_part": 10, "cuprium_bottle_yazhen_solution": 5 },
+      "outputs": { "yazhen_syringe_a": 1 },
+      "region": "wuling"
+    },
+    "jincao_tea": {
+      "machine": "packaging_unit",
+      "time_sec": 10,
+      "inputs": { "cuprium_part": 10, "cuprium_bottle_jincao_solution": 5 },
+      "outputs": { "jincao_tea": 1 },
       "region": "wuling"
     }
   }

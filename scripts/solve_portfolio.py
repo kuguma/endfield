@@ -38,6 +38,7 @@ class Product:
     originium_ore: float = 0.0  # ore consumption per minute at production_rate
     amethyst_ore: float = 0.0
     ferrium_ore: float = 0.0
+    cuprium_ore: float = 0.0
     power_consumption: float = 0.0  # unit/sec at production_rate
     production_limit: float | None = None  # max production rate if limited
     is_battery: bool = False
@@ -208,6 +209,14 @@ def _build_wuling_products() -> list[Product]:
             production_limit=60.0,  # Max 2 Forge of the Sky
         ),
 
+        # Cuprium Part (赤銅部品) - v1.1
+        # Chain: Cuprium Ore + Clean Water → Cuprium (Refining 5) → Cuprium Part (Fitting 20)
+        Product(
+            id="cuprium_part", name_ja="赤銅部品", name_en="Cuprium Part",
+            trade_value=1, production_rate=30.0,
+            cuprium_ore=30.0, power_consumption=25.0,
+        ),
+
         # Jincao Drink (錦草ソーダ)
         Product(
             id="jincao_drink", name_ja="錦草ソーダ", name_en="Jincao Drink",
@@ -222,6 +231,16 @@ def _build_wuling_products() -> list[Product]:
             ferrium_ore=120.0, power_consumption=175.0,
         ),
 
+        # Yazhen Syringe A (芽針注射剤A) - v1.1
+        # Chain: Cuprium → Part (Fitting) + Bottle (Moulding) → Bottle+Yazhen (Filling)
+        # Processing: Packaging(20) + Fitting×2(40) + Refining×2(10) + Filling(20)
+        #           + Moulding(10) + Refining×2(10) + Reactor(50) + Shredding(5) = 165
+        Product(
+            id="yazhen_syringe_a", name_ja="芽針注射剤A", name_en="Yazhen Syringe A",
+            trade_value=22, production_rate=6.0,
+            cuprium_ore=120.0, power_consumption=165.0,
+        ),
+
         # LC Wuling Battery
         # Note: power_consumption (227.5) already includes xiranite production power
         # The xiranite_consumption is for the constraint that limits total xiranite usage
@@ -232,6 +251,24 @@ def _build_wuling_products() -> list[Product]:
             xiranite_consumption=30.0,  # 5 xiranite per battery at 6/min (for constraint only)
             sandleaf_consumption=30.0,  # for dense originium powder
             is_battery=True, battery_power=1066.67,  # 1600 power * 40 sec / 60 sec/min
+        ),
+
+        # SC Wuling Battery (中容量武陵バッテリー) - v1.1
+        # Chain: Xircon (from Xiranite→LiquidXiranite→XirconEffluent→Xircon) + DOP
+        # Requires Sewage for Xircon Effluent; deficit sourced from Cuprium refining
+        # Processing: Packaging(20) + Xircon chain(160) + Xiranite chain(155)
+        #           + Cuprium refining for Sewage(5) + DOP chain(246.67) = 686.67
+        # Ferrium Ore: 30/min for Ferrium Powder → Xircon
+        # Cuprium Ore: 30/min for Sewage via Cuprium refining (conservative estimate;
+        #   actual need may be lower if Sewage is shared from other Cuprium products)
+        Product(
+            id="sc_wuling_battery", name_ja="中容量武陵バッテリー", name_en="SC Wuling Battery",
+            trade_value=54, production_rate=6.0,
+            originium_ore=240.0, ferrium_ore=30.0, cuprium_ore=30.0,
+            power_consumption=686.67,
+            xiranite_consumption=60.0,  # 60 xiranite/min for Xircon chain at 6/min
+            sandleaf_consumption=40.0,  # for 120 DOP/min (20 per battery)
+            is_battery=True, battery_power=2133.33,  # 3200 power * 40 sec / 60 sec/min
         ),
     ]
 
@@ -417,7 +454,7 @@ def solve_portfolio(
 
     # 1. Mining rate constraints
     # sum(prod_rate_i * ore_per_unit_rate_i) <= mining_rate
-    ore_types = ["originium_ore", "amethyst_ore", "ferrium_ore"]
+    ore_types = ["originium_ore", "amethyst_ore", "ferrium_ore", "cuprium_ore"]
     for ore_type in ore_types:
         mining_rate = region.mining_rates.get(ore_type, 0)
         if mining_rate > 0:
@@ -722,14 +759,28 @@ def format_output(region: RegionData, result: LPResult, interval_hours: float) -
     # Production table
     lines.append("## Production Table")
     lines.append("")
-    lines.append("| Product | Machines | Rate (/min) | Originium | Amethyst | Ferrium | Power (unit/sec) | Price |")
-    lines.append("|---------|----------|------------|-----------|----------|---------|------------------|-------|")
+    # Determine which ore types are relevant for this region
+    ore_display = []
+    ore_attr_map = {
+        "originium_ore": ("Originium", "源石鉱"),
+        "amethyst_ore": ("Amethyst", "紫晶鉱"),
+        "ferrium_ore": ("Ferrium", "青鉄鉱"),
+        "cuprium_ore": ("Cuprium", "赤銅鉱"),
+    }
+    for ore_type, (en_name, _ja_name) in ore_attr_map.items():
+        if region.mining_rates.get(ore_type, 0) > 0 or any(
+            getattr(p, ore_type, 0) > 0 for p in region.products
+        ):
+            ore_display.append((ore_type, en_name))
+
+    ore_headers = " | ".join(name for _, name in ore_display)
+    ore_separators = " | ".join("---" for _ in ore_display)
+    lines.append(f"| Product | Machines | Rate (/min) | {ore_headers} | Power (unit/sec) | Price |")
+    lines.append(f"|---------|----------|------------|{ore_separators}|------------------|-------|")
 
     products_by_id = {p.id: p for p in region.products}
 
-    total_orig = 0.0
-    total_ameth = 0.0
-    total_ferr = 0.0
+    ore_totals = {ore_type: 0.0 for ore_type, _ in ore_display}
     total_power = 0.0
     total_machines = 0.0
 
@@ -738,29 +789,28 @@ def format_output(region: RegionData, result: LPResult, interval_hours: float) -
         scale = rate / p.production_rate
         machines = scale  # machine count = rate / rate_per_machine
 
-        orig = p.originium_ore * scale
-        ameth = p.amethyst_ore * scale
-        ferr = p.ferrium_ore * scale
         power = p.power_consumption * scale
-
-        total_orig += orig
-        total_ameth += ameth
-        total_ferr += ferr
         total_power += power
         total_machines += machines
 
-        orig_str = f"{orig:.0f}" if orig > 0 else "-"
-        ameth_str = f"{ameth:.0f}" if ameth > 0 else "-"
-        ferr_str = f"{ferr:.0f}" if ferr > 0 else "-"
+        ore_values = []
+        for ore_type, _ in ore_display:
+            val = getattr(p, ore_type, 0.0) * scale
+            ore_totals[ore_type] += val
+            ore_values.append(f"{val:.0f}" if val > 0 else "-")
 
-        lines.append(f"| {p.name_en} | {machines:.2f} | {rate:.2f} | {orig_str} | {ameth_str} | {ferr_str} | {power:.0f} | {p.trade_value} |")
+        ore_cells = " | ".join(ore_values)
+        lines.append(f"| {p.name_en} | {machines:.2f} | {rate:.2f} | {ore_cells} | {power:.0f} | {p.trade_value} |")
 
     # Totals row
-    orig_surplus = region.mining_rates.get("originium_ore", 0) - total_orig
-    ameth_surplus = region.mining_rates.get("amethyst_ore", 0) - total_ameth
-    ferr_surplus = region.mining_rates.get("ferrium_ore", 0) - total_ferr
+    ore_total_strs = []
+    for ore_type, _ in ore_display:
+        total = ore_totals[ore_type]
+        surplus = region.mining_rates.get(ore_type, 0) - total
+        ore_total_strs.append(f"**{total:.0f}** (surplus {surplus:.0f})")
+    ore_total_cells = " | ".join(ore_total_strs)
 
-    lines.append(f"| **Total** | **{total_machines:.2f}** | | **{total_orig:.0f}** (surplus {orig_surplus:.0f}) | **{total_ameth:.0f}** (surplus {ameth_surplus:.0f}) | **{total_ferr:.0f}** (surplus {ferr_surplus:.0f}) | **{total_power:.0f}** | |")
+    lines.append(f"| **Total** | **{total_machines:.2f}** | | {ore_total_cells} | **{total_power:.0f}** | |")
     lines.append("")
 
     # Power allocation

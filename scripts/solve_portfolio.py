@@ -39,6 +39,7 @@ class Product:
     amethyst_ore: float = 0.0
     ferrium_ore: float = 0.0
     cuprium_ore: float = 0.0
+    precipitation_acid: float = 0.0  # NET precipitation acid consumption per minute (mining demand)
     power_consumption: float = 0.0  # unit/sec at production_rate
     production_limit: float | None = None  # max production rate if limited
     is_battery: bool = False
@@ -48,6 +49,10 @@ class Product:
     sandleaf_consumption: float = 0.0  # sandleaf consumed per minute at production_rate
     sewage_production: float = 0.0  # sewage produced per minute at production_rate (from cuprium refining)
     sewage_consumption: float = 0.0  # net sewage consumed per minute at production_rate
+    # v1.2: outpost assignment - which outposts can sell this product
+    sold_at: list[str] = field(default_factory=list)
+    # Secondary currency (for event items like Xiranite Gourd)
+    secondary_currency_value: float = 0.0  # e.g. AIC certs per unit
 
 
 @dataclass
@@ -61,6 +66,7 @@ class RegionData:
     products: list[Product]
     outposts: list[dict[str, Any]]
     power_buffer: float = 2000.0  # unit/sec reserved for map facilities
+    precipitation_acid_supply: float = 0.0  # /min from Acid Resistant Pump Mk II
 
 
 # =============================================================================
@@ -106,6 +112,7 @@ def load_region_data(region_id: str, base_path: Path) -> RegionData:
         # Power buffer for map facilities (turrets, ziplines, transfer storage)
         # Read from region JSON, fallback to 0 if not specified
         power_buffer=region_info.get("power_buffer", 0.0),
+        precipitation_acid_supply=region_info.get("mining_rates", {}).get("precipitation_acid", 0.0),
     )
 
 
@@ -200,25 +207,31 @@ def _build_valley4_products() -> list[Product]:
 
 
 def _build_wuling_products() -> list[Product]:
-    """Build Wuling product specifications from analysis data."""
+    """Build Wuling v1.2 product specifications.
+
+    Power and material consumption values are derived from verify_power.py
+    chain calculations. Outpost assignment (sold_at) follows v1.2 wiki data.
+    """
 
     products = [
-        # Xiranite (息壌) - production limited to 60/min by Forge of the Sky
+        # Xiranite (息壌) - production limited by Forge of the Sky
+        # v1.2: Forge of the Sky 8台 (initial) - 12台 (after Forge Expansion IV)
+        # Conservative: 8台 = 240/min for v1.2 base case
         Product(
             id="xiranite", name_ja="息壌", name_en="Xiranite",
             trade_value=1, production_rate=30.0,
             power_consumption=77.5,
-            production_limit=120.0,  # Max 4 Forge of the Sky (v1.1: 洪炉拡張Ⅱ)
+            production_limit=240.0,  # v1.2: 8 Forge of the Sky × 30/min
+            sold_at=["tianwangyuan", "cardiac_remediation"],
         ),
 
         # Cuprium Part (赤銅部品) - v1.1
-        # Chain: Cuprium Ore + Clean Water → Cuprium (Refining 5) → Cuprium Part (Fitting 20)
-        # Cuprium refining produces 1 Sewage per Cuprium as byproduct
         Product(
             id="cuprium_part", name_ja="赤銅部品", name_en="Cuprium Part",
             trade_value=1, production_rate=30.0,
             cuprium_ore=30.0, power_consumption=25.0,
             sewage_production=30.0,  # 1 sewage per cuprium refined
+            sold_at=["tianwangyuan"],
         ),
 
         # Jincao Drink (錦草ソーダ)
@@ -226,6 +239,18 @@ def _build_wuling_products() -> list[Product]:
             id="jincao_drink", name_ja="錦草ソーダ", name_en="Jincao Drink",
             trade_value=16, production_rate=6.0,
             ferrium_ore=120.0, power_consumption=175.0,
+            sold_at=["tianwangyuan"],
+        ),
+
+        # Jincao Tea (錦草ソーダⅡ) - v1.1 既存だが v1.2 で取引対象に
+        # Cuprium chain: 120 Cuprium/min → 120 Sewage byproduct
+        # Power: chain (verify_power: ~272.5)
+        Product(
+            id="jincao_tea", name_ja="錦草ソーダⅡ", name_en="Jincao Tea",
+            trade_value=22, production_rate=6.0,
+            cuprium_ore=120.0, power_consumption=272.5,
+            sewage_production=120.0,
+            sold_at=["cardiac_remediation"],
         ),
 
         # Yazhen Syringe C (芽針注射剤I)
@@ -233,48 +258,88 @@ def _build_wuling_products() -> list[Product]:
             id="yazhen_syringe_c", name_ja="芽針注射剤I", name_en="Yazhen Syringe C",
             trade_value=16, production_rate=6.0,
             ferrium_ore=120.0, power_consumption=175.0,
+            sold_at=["tianwangyuan"],
         ),
 
         # Yazhen Syringe A (芽針注射剤Ⅱ) - v1.1
-        # Chain: Cuprium → Part (Fitting) + Bottle (Moulding) → Bottle+Yazhen (Filling)
-        # Processing: Packaging(20) + Fitting×2(40) + Refining×2(10) + Filling(20)
-        #           + Moulding(10) + Refining×2(10) + Reactor(50) + Shredding(5) = 165
-        # Cuprium refining: 120/min at 6/min (60 for Part + 60 for Bottle) → 120 Sewage/min
         Product(
             id="yazhen_syringe_a", name_ja="芽針注射剤Ⅱ", name_en="Yazhen Syringe A",
             trade_value=22, production_rate=6.0,
-            cuprium_ore=120.0, power_consumption=165.0,
-            sewage_production=120.0,  # 1 sewage per cuprium refined (120 cuprium/min at 6/min)
+            cuprium_ore=120.0, power_consumption=272.5,
+            sewage_production=120.0,
+            sold_at=["tianwangyuan", "cardiac_remediation"],
         ),
 
         # LC Wuling Battery
-        # Note: power_consumption (227.5) already includes xiranite production power
-        # The xiranite_consumption is for the constraint that limits total xiranite usage
         Product(
             id="lc_wuling_battery", name_ja="小容量武陵バッテリー", name_en="LC Wuling Battery",
             trade_value=25, production_rate=6.0,
             originium_ore=180.0, power_consumption=227.5,
-            xiranite_consumption=30.0,  # 5 xiranite per battery at 6/min (for constraint only)
-            sandleaf_consumption=30.0,  # for dense originium powder
-            is_battery=True, battery_power=1066.67,  # 1600 power * 40 sec / 60 sec/min
+            xiranite_consumption=30.0,
+            sandleaf_consumption=30.0,
+            is_battery=True, battery_power=1066.67,
+            sold_at=["tianwangyuan", "cardiac_remediation"],
         ),
 
-        # SC Wuling Battery (中容量武陵バッテリー) - v1.1
-        # Chain: Xircon (from Xiranite→LiquidXiranite→XirconEffluent→Xircon) + DOP
-        # Sewage balance: Xircon Effluent needs 60/min, Xircon produces 30/min → net 30/min deficit
-        # Sewage must be supplied by other Cuprium products (shared constraint)
-        # Processing: Packaging(20) + Xircon chain(160) + Xiranite chain(155)
-        #           + DOP chain(246.67) = 681.67
-        # Ferrium Ore: 30/min for Ferrium Powder → Xircon
+        # SC Wuling Battery (中容量武陵バッテリー)
         Product(
             id="sc_wuling_battery", name_ja="中容量武陵バッテリー", name_en="SC Wuling Battery",
             trade_value=54, production_rate=6.0,
             originium_ore=240.0, ferrium_ore=30.0,
             power_consumption=681.67,
-            xiranite_consumption=60.0,  # 60 xiranite/min for Xircon chain at 6/min
-            sandleaf_consumption=40.0,  # for 120 DOP/min (20 per battery)
-            sewage_consumption=30.0,  # net: 60 needed for XE - 30 from Xircon byproduct
-            is_battery=True, battery_power=2133.33,  # 3200 power * 40 sec / 60 sec/min
+            xiranite_consumption=60.0,
+            sandleaf_consumption=40.0,
+            sewage_consumption=30.0,
+            is_battery=True, battery_power=2133.33,
+            sold_at=["tianwangyuan", "cardiac_remediation"],
+        ),
+
+        # === v1.2 NEW PRODUCTS ===
+
+        # Heavy Xiranite (重息壌) - v1.2
+        # 1台 Forge for Heavy + 3台 Forge for Xiranite (90/min) = 4台 Forge total
+        # Xircon Effluent 30/min via Reactor: Liquid Xiranite + Sewage → XE + IXE
+        # Sewage 30/min net consumption (must be from Cuprium products elsewhere)
+        # Power chain: forge×4 (200) + reactor×2 (100) + refining×12 (60) + shredding×3 (15) + others ~40 = 415
+        # No precipitation acid needed (basic recipe doesn't go through Liquid Heavy Xiranite)
+        Product(
+            id="heavy_xiranite", name_ja="重息壌", name_en="Heavy Xiranite",
+            trade_value=27, production_rate=6.0,
+            power_consumption=415.0,
+            xiranite_consumption=90.0,  # 60 (Heavy) + 30 (for Liquid Xiranite → XE)
+            sewage_consumption=30.0,    # net for Xircon Effluent reactor
+            sold_at=["cardiac_remediation"],
+        ),
+
+        # Hetonite Part (緋銅部品) - v1.2
+        # Chain: Cuprium ore→Cuprium→Powder→Solution(+PA)→HetoniteSolution(Purification, +PA byproduct)
+        #        → Hetonite (+ Sewage byproduct) → Hetonite Part
+        # Per 1 Hetonite Part: 30 PA pure consumption, 20 Cuprium ore, 5 Ferrium ore
+        # Net Sewage produced: 20/individual (Cuprium refining)
+        # Power: 835 unit/sec @ 6/min (verified)
+        Product(
+            id="hetonite_part", name_ja="緋銅部品", name_en="Hetonite Part",
+            trade_value=48, production_rate=6.0,
+            cuprium_ore=120.0, ferrium_ore=30.0,
+            precipitation_acid=180.0,  # 30 PA/個 × 6/min net
+            power_consumption=835.0,
+            sewage_production=120.0,   # 20/個 × 6/min from Cuprium refining
+            sold_at=["tianwangyuan"],
+        ),
+
+        # Xiranite Gourd (息壌ひょうたん) - v1.2 期間限定
+        # Chain: Experimental Xiranite Bottle (Moulding 2s, Xiranite 2 → 1) [推定]
+        #      + Experimental Xiranite Part (Fitting 2s, Xiranite 1 → 1) [確定]
+        # Per 1 Gourd: 5 Bottle (= 10 Xiranite) + 5 Part (= 5 Xiranite) = 15 Xiranite
+        # 6/min Gourd → 90 Xiranite/min (= Forge of the Sky 3台)
+        # Power: 305 unit/sec @ 6/min (verified)
+        Product(
+            id="xiranite_gourd", name_ja="息壌ひょうたん", name_en="Xiranite Gourd",
+            trade_value=40, production_rate=6.0,
+            power_consumption=305.0,
+            xiranite_consumption=90.0,  # 15 Xiranite × 6/min
+            sold_at=["cardiac_remediation"],
+            secondary_currency_value=10,  # 1 Gourd → 10 Fruits of Altruism Cert
         ),
     ]
 
@@ -378,6 +443,335 @@ class LPResult:
     battery_for_sale: dict[str, float]  # battery_id -> rate for sale
     storage_analysis: dict[str, dict] = field(default_factory=dict)
     outpost_analysis: OutpostTicketAnalysis | None = None
+    # v1.2: Multi-outpost sales allocation
+    sales_by_outpost: dict[str, dict[str, float]] = field(default_factory=dict)  # outpost_id -> {product_id: rate}
+    secondary_currency_rate: float = 0.0  # tickets/min of secondary currency (e.g. AIC certs)
+
+
+def _is_sold_at(product: Product, outpost: dict) -> bool:
+    """Check whether a product is sellable at an outpost."""
+    if product.sold_at:
+        return outpost["id"] in product.sold_at
+    # Fallback: outpost's products list
+    return product.id in outpost.get("products", [])
+
+
+def solve_portfolio_multi_outpost(
+    region: RegionData,
+    min_interval_hours: float,
+    machine_increment: float = 0.25,
+    bonus_rate: float = 1.0,
+    include_event_items: bool = True,
+    cardiac_remediation_level: int = 2,
+) -> LPResult:
+    """
+    Multi-outpost LP solver for v1.2 Wuling.
+
+    Variables:
+        q[i]:    production count for product i (integer, machine_increment unit)
+        pw[b]:   power-allocation count for battery b (integer, 0.25 unit)
+        s[i,j]:  sale rate of product i at outpost j (continuous, /min)
+
+    Constraints:
+        Mining:        Σi ore_i × p_i ≤ ore_rate
+        PA:            Σi pa_i × p_i ≤ pa_supply
+        Power:         Σi power_i × p_i + buffer ≤ Σb battery_power_b × pw_b
+        Battery split: pw_b ≤ p_b
+        Sale ≤ prod:   Σj s[i,j] + pw_b (if battery) ≤ p_i
+        Outpost-only:  s[i,j] = 0 if product not sold at outpost j
+        Xiranite:      production + consumption ≤ 240/min (Forge 8台)
+        Sewage:        Σi (consumption - production) × p_i ≤ 0
+        Storage:       s[i,j] × interval_min ≤ storage_limit
+        Outpost cap:   Σi s[i,j] × price_i ≤ rate_j × bonus / 60   (per minute)
+    Objective:
+        max Σi Σj s[i,j] × price_i
+    """
+    products = list(region.products)
+    if not include_event_items:
+        products = [p for p in products if p.id != "xiranite_gourd"]
+
+    # Adjust cardiac remediation level if specified
+    outposts = []
+    for o in region.outposts:
+        o2 = dict(o)
+        if o["id"] == "cardiac_remediation" and "level_table" in o:
+            for lvl in o["level_table"]:
+                if lvl["level"] == cardiac_remediation_level:
+                    o2["ticket_rate"] = lvl["ticket_rate"]
+                    o2["ticket_max"] = lvl["ticket_max"]
+                    o2["level"] = cardiac_remediation_level
+                    break
+        outposts.append(o2)
+
+    n = len(products)
+    m = len(outposts)
+    battery_indices = [i for i, p in enumerate(products) if p.is_battery]
+    n_batteries = len(battery_indices)
+
+    rate_increments = [p.production_rate * machine_increment for p in products]
+    power_increment = 0.25
+    power_rate_increments = [p.production_rate * power_increment for p in products]
+
+    # Variable layout:
+    n_q = n
+    n_pw = n_batteries
+    n_s = n * m
+    n_vars = n_q + n_pw + n_s
+
+    def q_idx(i: int) -> int:
+        return i
+
+    def pw_idx(bj: int) -> int:
+        return n_q + bj
+
+    def s_idx(i: int, j: int) -> int:
+        return n_q + n_pw + i * m + j
+
+    # Objective: maximize Σ s[i,j] × price (negate for minimization)
+    c = np.zeros(n_vars)
+    for i, p in enumerate(products):
+        for j, o in enumerate(outposts):
+            if _is_sold_at(p, o):
+                c[s_idx(i, j)] = -p.trade_value
+
+    A_ub = []
+    b_ub = []
+    A_eq = []
+    b_eq = []
+
+    # 1. Mining constraints
+    ore_types = ["originium_ore", "amethyst_ore", "ferrium_ore", "cuprium_ore"]
+    for ore_type in ore_types:
+        rate = region.mining_rates.get(ore_type, 0)
+        if rate > 0:
+            row = np.zeros(n_vars)
+            for i, p in enumerate(products):
+                ore_per_rate = getattr(p, ore_type, 0.0) / p.production_rate
+                row[q_idx(i)] = ore_per_rate * rate_increments[i]
+            A_ub.append(row)
+            b_ub.append(rate)
+
+    # 2. Precipitation acid
+    pa_supply = region.mining_rates.get("precipitation_acid", 0)
+    if pa_supply > 0:
+        row = np.zeros(n_vars)
+        for i, p in enumerate(products):
+            pa_per_rate = p.precipitation_acid / p.production_rate
+            row[q_idx(i)] = pa_per_rate * rate_increments[i]
+        A_ub.append(row)
+        b_ub.append(pa_supply)
+
+    # 3. Power balance
+    row = np.zeros(n_vars)
+    for i, p in enumerate(products):
+        power_per_rate = p.power_consumption / p.production_rate
+        row[q_idx(i)] = power_per_rate * rate_increments[i]
+    for bj, bi in enumerate(battery_indices):
+        bp = products[bi].battery_power
+        row[pw_idx(bj)] = -bp * power_rate_increments[bi]
+    A_ub.append(row)
+    b_ub.append(-region.power_buffer)
+
+    # 4. Battery: pw ≤ p (in increment units, pw_count × power_inc ≤ q_count × machine_inc)
+    for bj, bi in enumerate(battery_indices):
+        row = np.zeros(n_vars)
+        row[pw_idx(bj)] = power_increment
+        row[q_idx(bi)] = -machine_increment
+        A_ub.append(row)
+        b_ub.append(0)
+
+    # 5. Sale ≤ production (per product i: Σj s_ij + pw_actual ≤ p_i)
+    for i, p in enumerate(products):
+        row = np.zeros(n_vars)
+        for j in range(m):
+            row[s_idx(i, j)] = 1
+        row[q_idx(i)] = -rate_increments[i]
+        if i in battery_indices:
+            bj = battery_indices.index(i)
+            row[pw_idx(bj)] = power_rate_increments[i]
+        A_ub.append(row)
+        b_ub.append(0)
+
+    # 6. Force s_ij = 0 if product not sold at outpost
+    for i, p in enumerate(products):
+        for j, o in enumerate(outposts):
+            if not _is_sold_at(p, o):
+                row = np.zeros(n_vars)
+                row[s_idx(i, j)] = 1
+                A_eq.append(row)
+                b_eq.append(0)
+
+    # 7. Xiranite limit (production + consumption ≤ 240)
+    xiranite_idx = next((i for i, p in enumerate(products) if p.id == "xiranite"), None)
+    has_xiranite_consumers = any(p.xiranite_consumption > 0 for p in products)
+    if xiranite_idx is not None and has_xiranite_consumers:
+        xp = products[xiranite_idx]
+        if xp.production_limit:
+            row = np.zeros(n_vars)
+            row[q_idx(xiranite_idx)] = rate_increments[xiranite_idx]
+            for i, p in enumerate(products):
+                if p.xiranite_consumption > 0:
+                    xc_per_rate = p.xiranite_consumption / p.production_rate
+                    row[q_idx(i)] += xc_per_rate * rate_increments[i]
+            A_ub.append(row)
+            b_ub.append(xp.production_limit)
+
+    # 8. Sewage balance (consumption ≤ production)
+    has_sewage = any(p.sewage_consumption > 0 or p.sewage_production > 0 for p in products)
+    if has_sewage:
+        row = np.zeros(n_vars)
+        for i, p in enumerate(products):
+            net = (p.sewage_consumption - p.sewage_production) / p.production_rate
+            row[q_idx(i)] = net * rate_increments[i]
+        A_ub.append(row)
+        b_ub.append(0)
+
+    # 9. Storage cap per (product, outpost)
+    interval_minutes = min_interval_hours * 60
+    max_sale_rate = region.storage_limit / interval_minutes
+    for i in range(n):
+        for j in range(m):
+            row = np.zeros(n_vars)
+            row[s_idx(i, j)] = 1
+            A_ub.append(row)
+            b_ub.append(max_sale_rate)
+
+    # 10. Outpost ticket accumulation cap
+    for j, o in enumerate(outposts):
+        rate_per_h = o.get("ticket_rate", 0) * bonus_rate
+        if rate_per_h > 0:
+            row = np.zeros(n_vars)
+            for i, p in enumerate(products):
+                if _is_sold_at(p, o):
+                    row[s_idx(i, j)] = p.trade_value
+            A_ub.append(row)
+            b_ub.append(rate_per_h / 60)  # /min
+
+    # Bounds
+    lower = np.zeros(n_vars)
+    upper = np.full(n_vars, np.inf)
+    for i, p in enumerate(products):
+        if p.production_limit is not None:
+            upper[q_idx(i)] = p.production_limit / rate_increments[i]
+        else:
+            upper[q_idx(i)] = 10000
+    for bj, bi in enumerate(battery_indices):
+        upper[pw_idx(bj)] = upper[q_idx(bi)] * machine_increment / power_increment
+
+    # Convert
+    A_ub_arr = np.array(A_ub) if A_ub else np.zeros((0, n_vars))
+    b_ub_arr = np.array(b_ub) if b_ub else np.zeros(0)
+    A_eq_arr = np.array(A_eq) if A_eq else np.zeros((0, n_vars))
+    b_eq_arr = np.array(b_eq) if b_eq else np.zeros(0)
+
+    # MILP integrality: q & pw integer, s continuous
+    integrality = np.zeros(n_vars, dtype=int)
+    integrality[:n_q] = 1
+    integrality[n_q:n_q + n_pw] = 1
+
+    constraints = [LinearConstraint(A_ub_arr, -np.inf, b_ub_arr)]
+    if len(A_eq) > 0:
+        constraints.append(LinearConstraint(A_eq_arr, b_eq_arr, b_eq_arr))
+
+    bounds_milp = Bounds(lower, upper)
+    result = milp(c, constraints=constraints, bounds=bounds_milp, integrality=integrality)
+
+    if not result.success:
+        return LPResult(
+            success=False, message=str(getattr(result, "message", "MILP failed")),
+            ticket_rate=0, production_rates={}, ore_consumption={},
+            power_consumption=0, power_supply=0, power_balance=0,
+            battery_for_power={}, battery_for_sale={},
+        )
+
+    x = result.x
+
+    # Decode
+    production_rates = {}
+    sales_by_outpost = {o["id"]: {} for o in outposts}
+    for i, p in enumerate(products):
+        prod = x[q_idx(i)] * rate_increments[i]
+        if prod > 1e-6:
+            production_rates[p.id] = prod
+        for j, o in enumerate(outposts):
+            sale = x[s_idx(i, j)]
+            if sale > 1e-6:
+                sales_by_outpost[o["id"]][p.id] = sale
+
+    battery_for_power = {}
+    battery_for_sale = {}
+    for bj, bi in enumerate(battery_indices):
+        p = products[bi]
+        prod = x[q_idx(bi)] * rate_increments[bi]
+        pw = x[pw_idx(bj)] * power_rate_increments[bi]
+        if prod > 1e-6:
+            battery_for_power[p.id] = pw
+            battery_for_sale[p.id] = prod - pw
+
+    total_ticket_rate = sum(
+        x[s_idx(i, j)] * products[i].trade_value
+        for i in range(n) for j in range(m)
+    )
+    secondary_currency = sum(
+        x[s_idx(i, j)] * products[i].secondary_currency_value
+        for i in range(n) for j in range(m)
+        if products[i].secondary_currency_value > 0
+    )
+
+    # Mining/PA totals
+    ore_consumption = {}
+    for ore_type in ore_types:
+        total = sum(
+            x[q_idx(i)] * rate_increments[i] * (getattr(p, ore_type, 0.0) / p.production_rate)
+            for i, p in enumerate(products)
+        )
+        if total > 1e-6:
+            ore_consumption[ore_type] = total
+    pa_total = sum(
+        x[q_idx(i)] * rate_increments[i] * (p.precipitation_acid / p.production_rate)
+        for i, p in enumerate(products)
+    )
+    if pa_total > 1e-6:
+        ore_consumption["precipitation_acid"] = pa_total
+
+    # Power
+    power_consumption = sum(
+        x[q_idx(i)] * rate_increments[i] * (p.power_consumption / p.production_rate)
+        for i, p in enumerate(products)
+    )
+    power_supply = sum(
+        x[pw_idx(bj)] * power_rate_increments[bi] * products[bi].battery_power
+        for bj, bi in enumerate(battery_indices)
+    )
+
+    # Storage analysis (per outpost x product)
+    storage_analysis = {}
+    for o in outposts:
+        for prod_id, sale_rate in sales_by_outpost[o["id"]].items():
+            production = sale_rate * interval_minutes
+            loss = max(0, production - region.storage_limit)
+            storage_analysis[f"{prod_id}@{o['id']}"] = {
+                "production": production,
+                "storage_loss": loss,
+                "effective": min(production, region.storage_limit),
+                "loss_percent": loss / production * 100 if production > 0 else 0,
+            }
+
+    return LPResult(
+        success=True,
+        message="Optimal solution found",
+        ticket_rate=total_ticket_rate,
+        production_rates=production_rates,
+        ore_consumption=ore_consumption,
+        power_consumption=power_consumption,
+        power_supply=power_supply,
+        power_balance=power_supply - power_consumption - region.power_buffer,
+        battery_for_power=battery_for_power,
+        battery_for_sale=battery_for_sale,
+        storage_analysis=storage_analysis,
+        sales_by_outpost=sales_by_outpost,
+        secondary_currency_rate=secondary_currency,
+    )
 
 
 def solve_portfolio(
@@ -385,6 +779,8 @@ def solve_portfolio(
     min_interval_hours: float,
     use_machine_increments: bool = True,
     machine_increment: float = 0.25,
+    bonus_rate: float = 1.0,
+    include_event_items: bool = True,
 ) -> LPResult:
     """
     Solve the production portfolio optimization problem using MILP.
@@ -890,15 +1286,22 @@ def format_output(region: RegionData, result: LPResult, interval_hours: float) -
     lines.append("|---------|------------|---------------|------|--------|")
 
     total_loss_value = 0.0
-    for prod_id, analysis in result.storage_analysis.items():
-        p = products_by_id[prod_id]
+    for key, analysis in result.storage_analysis.items():
+        # v1.2 multi-outpost: keys may be "<product_id>@<outpost_id>"
+        prod_id = key.split("@", 1)[0]
+        outpost_suffix = ""
+        if "@" in key:
+            outpost_suffix = f" @ {key.split('@', 1)[1]}"
+        p = products_by_id.get(prod_id)
+        if not p:
+            continue
         loss_value = analysis["storage_loss"] * p.trade_value
         total_loss_value += loss_value
 
         loss_str = f"{analysis['storage_loss']:.0f}" if analysis["storage_loss"] > 0 else "-"
         loss_pct_str = f"{analysis['loss_percent']:.1f}%" if analysis["loss_percent"] > 0 else "-"
 
-        lines.append(f"| {p.name_en} | {analysis['production']:.0f} | {region.storage_limit} | {loss_str} | {loss_pct_str} |")
+        lines.append(f"| {p.name_en}{outpost_suffix} | {analysis['production']:.0f} | {region.storage_limit} | {loss_str} | {loss_pct_str} |")
 
     if total_loss_value > 0:
         lines.append(f"| **Total Loss Value** | | | **{total_loss_value:.0f} tickets** | |")
@@ -951,6 +1354,39 @@ def format_output(region: RegionData, result: LPResult, interval_hours: float) -
             lines.append(f"✅ Outpost capacity sufficient: {oa.available_tickets:,.0f} available vs {oa.produced_tickets:,.0f} produced")
             lines.append("")
 
+    # v1.2: Multi-outpost sales breakdown
+    if result.sales_by_outpost:
+        lines.append("## Sales by Outpost (v1.2 multi-outpost)")
+        lines.append("")
+        for outpost in region.outposts:
+            ot_id = outpost["id"]
+            sales = result.sales_by_outpost.get(ot_id, {})
+            if not sales:
+                continue
+            lines.append(f"### {outpost['name_ja']} ({ot_id})")
+            lines.append("")
+            lines.append("| Product | Sale (/min) | Price | Tickets/min |")
+            lines.append("|---------|-------------|-------|-------------|")
+            outpost_total = 0.0
+            for prod_id, sale_rate in sorted(sales.items(), key=lambda kv: -kv[1] * products_by_id[kv[0]].trade_value):
+                p = products_by_id[prod_id]
+                tickets = sale_rate * p.trade_value
+                outpost_total += tickets
+                lines.append(f"| {p.name_ja} | {sale_rate:.2f} | {p.trade_value} | {tickets:.2f} |")
+            lines.append(f"| **小計** | | | **{outpost_total:.2f}** |")
+            # Compare with outpost cap
+            rate_per_h = outpost.get("ticket_rate", 0)
+            cap_per_min = rate_per_h / 60
+            util = outpost_total / cap_per_min * 100 if cap_per_min > 0 else 0
+            lines.append(f"")
+            lines.append(f"蓄積率: {rate_per_h:,.0f}/h ({cap_per_min:.2f}/min) — 利用率 **{util:.1f}%**")
+            lines.append("")
+
+        if result.secondary_currency_rate > 0:
+            lines.append(f"**支援成果券レート**: {result.secondary_currency_rate:.2f}/min "
+                         f"({result.secondary_currency_rate * 60:.0f}/h)")
+            lines.append("")
+
     return "\n".join(lines)
 
 
@@ -989,6 +1425,24 @@ def main():
         default=4,
         help="Machine increment divisor: 1=integer, 2=0.5, 3=0.333, 4=0.25 (default: 4)",
     )
+    parser.add_argument(
+        "--bonus",
+        type=float,
+        default=1.30,
+        help="Outpost accumulation bonus multiplier (default: 1.30 for +30%%)",
+    )
+    parser.add_argument(
+        "--no-gourd",
+        action="store_true",
+        help="Exclude Xiranite Gourd (event-limited item) from optimization",
+    )
+    parser.add_argument(
+        "--cardiac-level",
+        type=int,
+        choices=[1, 2],
+        default=2,
+        help="Cardiac Remediation Station level (Wuling only, default: 2)",
+    )
 
     args = parser.parse_args()
 
@@ -1009,7 +1463,17 @@ def main():
     # Calculate machine increment from CLI argument
     machine_increment = 1.0 / args.increment
 
-    result = solve_portfolio(region, args.interval, machine_increment=machine_increment)
+    # Use multi-outpost solver for Wuling, legacy single-outpost for Valley IV
+    if args.region.lower() == "wuling":
+        result = solve_portfolio_multi_outpost(
+            region, args.interval,
+            machine_increment=machine_increment,
+            bonus_rate=args.bonus,
+            include_event_items=not args.no_gourd,
+            cardiac_remediation_level=args.cardiac_level,
+        )
+    else:
+        result = solve_portfolio(region, args.interval, machine_increment=machine_increment)
 
     if args.json:
         outpost_data = None

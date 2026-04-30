@@ -1,6 +1,8 @@
 # 武陵 出荷製品の効率分析
 
-武陵（Wuling）で拠点取引可能な全7製品について、原材料の採掘・栽培コストと生産チェーンの電力コストを考慮した実効利益率を分析する。
+武陵（Wuling）で拠点取引可能な全製品について、原材料の採掘・栽培コストと生産チェーンの電力コストを考慮した実効利益率を分析する。
+
+**v1.2対応** (2026-04-17): 重息壌、緋銅部品、錦草ソーダⅡを追加。新拠点「心臓修復施設」追加。天有洪炉8台、赤銅鉱180/min、沈殿酸240/min。
 
 **v1.1対応**: 赤銅部品、中容量武陵バッテリー、芽針注射剤Ⅱを追加。
 
@@ -286,10 +288,79 @@
 
 </details>
 
+## v1.2 追加製品
+
+### 重息壌 (Heavy Xiranite) — 27券
+
+- **マシン**: Forge of the Sky 10s, Xiranite ×10 + Xircon Effluent ×5 → Heavy Xiranite ×1
+- **生産**: 1台で 6/min。Xiranite 60/min + Xircon Effluent 30/min 入力
+- **売却拠点**: 心臓修復施設 (Cardiac Remediation Station)
+- **電力**: 415 unit/sec @ 6/min
+- 鉱石不要 (息壌チェーン経由で炭素 = 錦草/芽針 から作る)、Sewage 30/min は他製品から調達
+- 単独では利益率は中容量武陵バッテリーより劣るが、**心臓修復施設の蓄積率枠を埋める** のに最適
+
+### 緋銅部品 (Hetonite Part) — 48券
+
+- **マシン**: Fitting Unit 10s, Hetonite ×5 → Hetonite Part ×1
+- **生産**: 1台で 6/min。Hetonite 30/min 入力
+- **売却拠点**: 天王原 Lv3
+- **電力**: 835 unit/sec @ 6/min (沈殿酸チェーンが大きい)
+- **必要素材**: 赤銅鉱 20/個、青鉄鉱 5/個、沈殿酸 30/個 (純消費)
+- **生産チェーン**:
+  - Cuprium Ore + Clean Water → Cuprium (Refining)
+  - Cuprium → Cuprium Powder (Shredding)
+  - Cuprium Powder + Precipitation Acid → Cuprium Solution (Reactor Crucible)
+  - Cuprium Solution ×4 → Hetonite Solution + Precipitation Acid (Purification Unit)
+  - Hetonite Solution ×2 + Ferrium Powder → Hetonite + Sewage (Reactor Crucible)
+  - Hetonite ×5 → Hetonite Part (Fitting)
+- **副産物**: Sewage 20/個 (他の Cuprium 製品の Sewage と合算)
+- **沈殿酸の純消費**: 30/個 (4個入力 - 1個副産物 = 3 PA per Hetonite Solution、それを ×10倍で Hetonite Part 1個)
+
+### 錦草ソーダⅡ (Jincao Tea) — 22券
+
+- 既存レシピ (v1.1) だが、v1.2 で取引対象に追加
+- **マシン**: Packaging Unit 10s, Cuprium Part ×10 + Cuprium Bottle (Jincao Solution) ×5 → Jincao Tea ×1
+- **売却拠点**: 心臓修復施設
+
+## v1.2 期間限定: 息壌ひょうたん (Xiranite Gourd)
+
+- **取引価格**: 武陵取引券 40 + 支援成果券 10
+- **マシン**: Packaging Unit 10s, Experimental Xiranite Bottle ×5 + Experimental Xiranite Part ×5 → Xiranite Gourd ×1
+- **必要素材**: Xiranite 15/個 (Bottle 10 + Part 5)
+- **売却拠点**: 心臓修復施設
+- **イベント期間**: AIC Support: Palm-Top Savior (〜2026-05-13)
+- **電力**: 305 unit/sec @ 6/min
+
+## v1.2 新マシン
+
+| マシン | 電力 | 用途 |
+|---|--:|---|
+| 精製ユニット (Purification Unit) | 50 (推定) | Cuprium Solution → Hetonite Solution + 沈殿酸 |
+| 拡張化学反応炉 (Expanded Crucible) | 100 (推定) | Reactor Crucible 上位互換 |
+| 耐酸性液体ポンプMk II | 20 | 沈殿酸 30/min 抽出 (清水不要) |
+
+## v1.2 ポートフォリオ最適化
+
+[最適生産ポートフォリオ：武陵 (v1.2)](optimization_solved_wuling.md) を参照。
+
+主要結果（24H、+30%ボーナス、心臓修復 Lv2）:
+
+| 拠点 | 蓄積/h (×1.3) | 売却/min | 主力製品 |
+|---|--:|--:|---|
+| 天王原 (Lv3) | 34,944 | 582.40 | 緋銅部品 + 小容量バッテリー |
+| 心臓修復施設 (Lv2) | 10,920 | 182.00 | 中容量バッテリー + 息壌 |
+| **合計** | 45,864 | **764.40 券/min** | |
+
+実効レート: v1.1 (582/min, 1拠点律速) → v1.2 (764.4/min, 2拠点律速) で **+31.3%**。
+
+v1.1 では生産能力 723/min を 1 拠点の蓄積率上限 (582/min) で削っていた。v1.2 で心臓修復施設追加により蓄積率上限が +31% に拡大、生産能力も新製品で追従。
+
 ## データソース
 
-- [Endfield Talos Wiki (wiki.gg)](https://endfield.wiki.gg/) - マシン電力、レシピデータ
+- [Endfield Talos Wiki (wiki.gg)](https://endfield.wiki.gg/) - マシン電力、レシピデータ、拠点仕様
 - [Game8 エンドフィールド攻略](https://game8.jp/arknights-endfield) - 取引価格データ
 - [GameWith エンドフィールド](https://gamewith.net/akendfield/) - バッテリー電力仕様
+- [biligame wiki 終末地](https://wiki.biligame.com/zmd/) - 仓储节点・設備図鑑
+- [AppMedia エンドフィールド](https://appmedia.jp/arknights_endfield/) - 設備仕様
 - [recipes.json](../recipes.json) - 本リポジトリのレシピデータベース
 - [wuling_products.json](../wuling_products.json) - 本リポジトリの製品データベース

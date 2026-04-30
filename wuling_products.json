@@ -14,9 +14,15 @@
       "originium_ore": 480,
       "amethyst_ore": 0,
       "ferrium_ore": 90,
-      "cuprium_ore": 120
+      "cuprium_ore": 180,
+      "precipitation_acid": 240
     },
-    "storage_limit": 48000,
+    "mining_notes": {
+      "cuprium_ore": "v1.2: 清波塞 120/min + Marker Stone 60/min = 180/min",
+      "precipitation_acid": "v1.2: Acid Resistant Pump Mk II 30/min × 8台 (Marker Stone 実質上限) = 240/min。清水入力不要、電力 20 unit/sec/台"
+    },
+    "storage_limit": 50000,
+    "storage_notes": "v1.2: Lv3 で 50,000 (v1.1 の 48,000 から増加)",
     "power_buffer": 800
   },
   "outposts": [
@@ -25,8 +31,14 @@
       "name_ja": "天王原建設支援拠点",
       "name_en": "Sky King Flats Construction Site",
       "location": "景玉谷",
+      "level": 3,
       "ticket_rate": 26880,
       "ticket_max": 2600000,
+      "level_table": [
+        { "level": 1, "ticket_rate": 4680, "ticket_max": 135000 },
+        { "level": 2, "ticket_rate": 12900, "ticket_max": 1250000 },
+        { "level": 3, "ticket_rate": 26880, "ticket_max": 2600000 }
+      ],
       "products": [
         "xiranite",
         "lc_wuling_battery",
@@ -34,7 +46,30 @@
         "jincao_drink",
         "yazhen_syringe_c",
         "sc_wuling_battery",
-        "yazhen_syringe_a"
+        "yazhen_syringe_a",
+        "hetonite_part"
+      ]
+    },
+    {
+      "id": "cardiac_remediation",
+      "name_ja": "心臓修復施設",
+      "name_en": "Cardiac Remediation Station",
+      "location": "首礎 - Marker Stone",
+      "level": 2,
+      "ticket_rate": 8400,
+      "ticket_max": 720000,
+      "level_table": [
+        { "level": 1, "ticket_rate": 3300, "ticket_max": 280000 },
+        { "level": 2, "ticket_rate": 8400, "ticket_max": 720000 }
+      ],
+      "products": [
+        "xiranite",
+        "lc_wuling_battery",
+        "jincao_tea",
+        "heavy_xiranite",
+        "yazhen_syringe_a",
+        "sc_wuling_battery",
+        "xiranite_gourd"
       ]
     }
   ],
@@ -46,7 +81,9 @@
       "name_zh": "息壤",
       "category": "basic_material",
       "trade_value": 1,
-      "production_limit": 60
+      "production_limit": 240,
+      "production_limit_note": "v1.2: 天有洪炉 8台 × 30/min = 240/min (最大12台で360/min も可能)",
+      "sold_at": ["tianwangyuan", "cardiac_remediation"]
     },
     {
       "id": "cuprium_part",
@@ -54,7 +91,8 @@
       "name_en": "Cuprium Part",
       "name_zh": "赤铜零件",
       "category": "basic_material",
-      "trade_value": 1
+      "trade_value": 1,
+      "sold_at": ["tianwangyuan"]
     },
     {
       "id": "jincao_drink",
@@ -62,7 +100,17 @@
       "name_en": "Jincao Drink",
       "name_zh": "锦草汽水",
       "category": "consumable",
-      "trade_value": 16
+      "trade_value": 16,
+      "sold_at": ["tianwangyuan"]
+    },
+    {
+      "id": "jincao_tea",
+      "name_ja": "錦草ソーダⅡ",
+      "name_en": "Jincao Tea",
+      "name_zh": "锦草茶",
+      "category": "consumable",
+      "trade_value": 22,
+      "sold_at": ["cardiac_remediation"]
     },
     {
       "id": "yazhen_syringe_c",
@@ -70,7 +118,8 @@
       "name_en": "Yazhen Syringe (C)",
       "name_zh": "芽针针剂",
       "category": "syringe",
-      "trade_value": 16
+      "trade_value": 16,
+      "sold_at": ["tianwangyuan"]
     },
     {
       "id": "yazhen_syringe_a",
@@ -78,7 +127,8 @@
       "name_en": "Yazhen Syringe (A)",
       "name_zh": "芽针针剂A",
       "category": "syringe",
-      "trade_value": 22
+      "trade_value": 22,
+      "sold_at": ["tianwangyuan", "cardiac_remediation"]
     },
     {
       "id": "lc_wuling_battery",
@@ -86,7 +136,8 @@
       "name_en": "LC Wuling Battery",
       "name_zh": "低容武陵电池",
       "category": "battery",
-      "trade_value": 25
+      "trade_value": 25,
+      "sold_at": ["tianwangyuan", "cardiac_remediation"]
     },
     {
       "id": "sc_wuling_battery",
@@ -94,7 +145,37 @@
       "name_en": "SC Wuling Battery",
       "name_zh": "中容武陵电池",
       "category": "battery",
-      "trade_value": 54
+      "trade_value": 54,
+      "sold_at": ["tianwangyuan", "cardiac_remediation"]
+    },
+    {
+      "id": "heavy_xiranite",
+      "name_ja": "重息壌",
+      "name_en": "Heavy Xiranite",
+      "name_zh": "重息壤",
+      "category": "basic_material",
+      "trade_value": 27,
+      "sold_at": ["cardiac_remediation"]
+    },
+    {
+      "id": "hetonite_part",
+      "name_ja": "緋銅部品",
+      "name_en": "Hetonite Part",
+      "name_zh": "赫铜零件",
+      "category": "basic_material",
+      "trade_value": 48,
+      "sold_at": ["tianwangyuan"]
+    },
+    {
+      "id": "xiranite_gourd",
+      "name_ja": "息壌ひょうたん",
+      "name_en": "Xiranite Gourd",
+      "name_zh": "息壤葫芦",
+      "category": "event_limited",
+      "trade_value": 40,
+      "secondary_currency": { "fruits_of_altruism_cert": 10 },
+      "event": "AIC Support: Palm-Top Savior (期間限定: ~ 2026-05-13)",
+      "sold_at": ["cardiac_remediation"]
     }
   ]
 }

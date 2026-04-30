@@ -8,9 +8,12 @@
     "filling_unit": { "name_en": "Filling Unit", "name_ja": "充填ユニット", "power": 20 },
     "packaging_unit": { "name_en": "Packaging Unit", "name_ja": "梱包ユニット", "power": 20 },
     "thermal_bank": { "name_en": "Thermal Bank", "name_ja": "サーマルバンク", "power": 0, "note": "power generator" },
-    "forge_of_the_sky": { "name_en": "Forge of the Sky", "name_ja": "天有洪炉", "power": 50, "region": "wuling" },
+    "forge_of_the_sky": { "name_en": "Forge of the Sky", "name_ja": "天有洪炉", "power": 50, "region": "wuling", "max_count_v12": 8 },
     "reactor_crucible": { "name_en": "Reactor Crucible", "name_ja": "化学反応炉", "power": 50, "region": "wuling" },
-    "gearing_unit": { "name_en": "Gearing Unit", "name_ja": "装備部品加工機", "power": 10, "region": "wuling" }
+    "gearing_unit": { "name_en": "Gearing Unit", "name_ja": "装備部品加工機", "power": 10, "region": "wuling" },
+    "purification_unit": { "name_en": "Purification Unit", "name_ja": "精製ユニット", "power": 50, "region": "wuling", "note": "v1.2 added; power assumed equal to Reactor Crucible" },
+    "expanded_crucible": { "name_en": "Expanded Crucible", "name_ja": "拡張化学反応炉", "power": 100, "region": "wuling", "note": "v1.2 added; power assumed 2x Reactor Crucible" },
+    "acid_resistant_pump_mk2": { "name_en": "Acid Resistant Pump Mk II", "name_ja": "耐酸性液体ポンプII", "power": 20, "region": "wuling", "note": "v1.2 added; pumps Precipitation Acid, no clean water input" }
   },
   "items": {
     "originium_ore":          { "name_en": "Originium Ore",          "name_ja": "源石鉱",                "type": "raw_ore" },
@@ -55,7 +58,20 @@
     "ferrium_bottle_yazhen_solution": { "name_en": "Ferrium Bottle (Yazhen Solution)", "name_ja": "鉄青製ボトル（芽針溶液）", "type": "intermediate", "region": "wuling" },
     "yazhen_syringe_c":       { "name_en": "Yazhen Syringe (C)",     "name_ja": "芽針注射剤Ⅰ",           "type": "product", "region": "wuling" },
     "cuprium_ore":             { "name_en": "Cuprium Ore",            "name_ja": "赤銅鉱物",               "type": "raw_ore", "region": "wuling" },
+    "precipitation_acid":      { "name_en": "Precipitation Acid",     "name_ja": "沈殿酸",                 "type": "raw_fluid", "region": "wuling" },
     "cuprium":                 { "name_en": "Cuprium",                "name_ja": "赤銅塊",                 "type": "intermediate", "region": "wuling" },
+    "cuprium_powder":          { "name_en": "Cuprium Powder",         "name_ja": "赤銅パウダー",           "type": "intermediate", "region": "wuling" },
+    "cuprium_solution":        { "name_en": "Cuprium Solution",       "name_ja": "赤銅溶液",               "type": "intermediate", "region": "wuling" },
+    "hetonite_solution":       { "name_en": "Hetonite Solution",      "name_ja": "緋銅溶液",               "type": "intermediate", "region": "wuling" },
+    "hetonite":                { "name_en": "Hetonite",               "name_ja": "緋銅塊",                 "type": "intermediate", "region": "wuling" },
+    "hetonite_part":           { "name_en": "Hetonite Part",          "name_ja": "緋銅部品",               "type": "product", "region": "wuling" },
+    "hetonite_bottle":         { "name_en": "Hetonite Bottle",        "name_ja": "緋銅製ボトル",           "type": "intermediate", "region": "wuling" },
+    "heavy_xiranite":          { "name_en": "Heavy Xiranite",         "name_ja": "重息壌",                 "type": "product", "region": "wuling" },
+    "liquid_heavy_xiranite":   { "name_en": "Liquid Heavy Xiranite",  "name_ja": "液化重息壌",             "type": "intermediate", "region": "wuling" },
+    "hetonite_component":      { "name_en": "Hetonite Component",     "name_ja": "緋銅装備部品",           "type": "intermediate", "region": "wuling", "note": "装備生産専用、取引対象外" },
+    "experimental_xiranite_part":   { "name_en": "Experimental Xiranite Part",   "name_ja": "実験用息壌部品",     "type": "intermediate", "region": "wuling" },
+    "experimental_xiranite_bottle": { "name_en": "Experimental Xiranite Bottle", "name_ja": "実験用息壌ボトル",   "type": "intermediate", "region": "wuling", "note": "レシピは Bottle系統の標準パターンと推定 (Moulding 2s, Xiranite 2 → 1)" },
+    "xiranite_gourd":          { "name_en": "Xiranite Gourd",         "name_ja": "息壌ひょうたん",         "type": "product", "region": "wuling", "note": "AIC期間限定アイテム (Palm-Top Savior イベント、5/13終了)" },
     "cuprium_part":            { "name_en": "Cuprium Part",           "name_ja": "赤銅部品",               "type": "product", "region": "wuling" },
     "cuprium_bottle":          { "name_en": "Cuprium Bottle",         "name_ja": "赤銅製ボトル",           "type": "intermediate", "region": "wuling" },
     "sewage":                  { "name_en": "Sewage",                 "name_ja": "汚水",                   "type": "intermediate", "region": "wuling" },
@@ -428,6 +444,95 @@
       "time_sec": 10,
       "inputs": { "cuprium_part": 10, "cuprium_bottle_jincao_solution": 5 },
       "outputs": { "jincao_tea": 1 },
+      "region": "wuling"
+    },
+    "cuprium_powder": {
+      "machine": "shredding_unit",
+      "time_sec": 2,
+      "inputs": { "cuprium": 1 },
+      "outputs": { "cuprium_powder": 2 },
+      "region": "wuling",
+      "note": "推定: Ferrium Powder と同パターン (Shredding 2s, 1→2)"
+    },
+    "cuprium_solution": {
+      "machine": "reactor_crucible",
+      "time_sec": 2,
+      "inputs": { "cuprium_powder": 1, "precipitation_acid": 1 },
+      "outputs": { "cuprium_solution": 1 },
+      "region": "wuling"
+    },
+    "hetonite_solution": {
+      "machine": "purification_unit",
+      "time_sec": 2,
+      "inputs": { "cuprium_solution": 4 },
+      "outputs": { "hetonite_solution": 1, "precipitation_acid": 1 },
+      "region": "wuling",
+      "note": "副産物として Precipitation Acid 1個も出力"
+    },
+    "hetonite": {
+      "machine": "reactor_crucible",
+      "time_sec": 2,
+      "inputs": { "hetonite_solution": 2, "ferrium_powder": 1 },
+      "outputs": { "hetonite": 1, "sewage": 1 },
+      "region": "wuling",
+      "note": "副産物として Sewage 1個も出力"
+    },
+    "hetonite_part": {
+      "machine": "fitting_unit",
+      "time_sec": 10,
+      "inputs": { "hetonite": 5 },
+      "outputs": { "hetonite_part": 1 },
+      "region": "wuling"
+    },
+    "hetonite_bottle": {
+      "machine": "moulding_unit",
+      "time_sec": 2,
+      "inputs": { "hetonite": 2 },
+      "outputs": { "hetonite_bottle": 1 },
+      "region": "wuling"
+    },
+    "heavy_xiranite": {
+      "machine": "forge_of_the_sky",
+      "time_sec": 10,
+      "inputs": { "xiranite": 10, "xircon_effluent": 5 },
+      "outputs": { "heavy_xiranite": 1 },
+      "region": "wuling"
+    },
+    "liquid_heavy_xiranite": {
+      "machine": "reactor_crucible",
+      "time_sec": 2,
+      "inputs": { "heavy_xiranite": 1, "precipitation_acid": 1 },
+      "outputs": { "liquid_heavy_xiranite": 1 },
+      "region": "wuling"
+    },
+    "hetonite_component": {
+      "machine": "gearing_unit",
+      "time_sec": 10,
+      "inputs": { "hetonite_part": 2, "heavy_xiranite": 2 },
+      "outputs": { "hetonite_component": 1 },
+      "region": "wuling",
+      "note": "装備生産専用、取引対象外"
+    },
+    "experimental_xiranite_part": {
+      "machine": "fitting_unit",
+      "time_sec": 2,
+      "inputs": { "xiranite": 1 },
+      "outputs": { "experimental_xiranite_part": 1 },
+      "region": "wuling"
+    },
+    "experimental_xiranite_bottle": {
+      "machine": "moulding_unit",
+      "time_sec": 2,
+      "inputs": { "xiranite": 2 },
+      "outputs": { "experimental_xiranite_bottle": 1 },
+      "region": "wuling",
+      "note": "Bottle系統の標準パターンから推定 (要ゲーム内確認)"
+    },
+    "xiranite_gourd": {
+      "machine": "packaging_unit",
+      "time_sec": 10,
+      "inputs": { "experimental_xiranite_bottle": 5, "experimental_xiranite_part": 5 },
+      "outputs": { "xiranite_gourd": 1 },
       "region": "wuling"
     }
   }
